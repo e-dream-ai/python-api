@@ -1,0 +1,16 @@
+# dummy file
+dummy2.mp4
+assets/**
+
+# env variables
+.env
+
+# venv
+venv
+
+# python
+__pycache__
+
+# log
+flask.log
+rq_worker.log

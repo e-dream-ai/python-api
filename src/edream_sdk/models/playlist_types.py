@@ -1,8 +1,8 @@
 from enum import Enum
 from typing import List, Optional
 from dataclasses import dataclass
-from models.dream_types import Dream
-from models.user_types import User
+from .dream_types import Dream
+from .user_types import User
 
 
 # Enum for DreamStatusType

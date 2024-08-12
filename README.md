@@ -1,4 +1,4 @@
-# python-sdk
+# edream-sdk
 
 ### variables
 

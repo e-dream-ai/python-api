@@ -1,15 +1,15 @@
 from typing import Optional
-from client.api_client import ApiClient
-from models.api_types import ApiResponse
-from models.dream_types import Dream
-from models.playlist_types import (
+from dataclasses import asdict
+from ..client.api_client import ApiClient
+from ..models.api_types import ApiResponse
+from ..models.dream_types import Dream
+from ..models.playlist_types import (
     PlaylistResponseWrapper,
     PlaylistItemType,
     UpdatePlaylistRequest,
 )
-from controllers.file_upload import upload_file
-from utils.api_utils import deserialize_api_response
-from dataclasses import asdict
+from ..controllers.file_upload import upload_file
+from ..utils.api_utils import deserialize_api_response
 
 
 def get_playlist(uuid: str) -> Optional[ApiResponse[PlaylistResponseWrapper]]:

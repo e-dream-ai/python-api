@@ -1,13 +1,13 @@
 from typing import Optional
 from dataclasses import asdict
-from client.api_client import ApiClient
-from models.api_types import ApiResponse
-from models.dream_types import (
+from ..client.api_client import ApiClient
+from ..models.api_types import ApiResponse
+from ..models.dream_types import (
     DreamResponseWrapper,
     DreamVoteResponseWrapper,
     UpdateDreamRequest,
 )
-from utils.api_utils import deserialize_api_response
+from ..utils.api_utils import deserialize_api_response
 
 
 def get_dream(uuid: str) -> Optional[ApiResponse[DreamResponseWrapper]]:

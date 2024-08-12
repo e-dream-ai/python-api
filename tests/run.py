@@ -1,6 +1,6 @@
-from client.api_client import initialize_api_client
-from controllers.user import get_logged_user
-from controllers.dream import (
+from edream_sdk.client.api_client import initialize_api_client
+from edream_sdk.controllers.user import get_logged_user
+from edream_sdk.controllers.dream import (
     get_dream,
     update_dream,
     get_dream_vote,
@@ -8,7 +8,7 @@ from controllers.dream import (
     downvote_dream,
     delete_dream,
 )
-from controllers.playlist import (
+from edream_sdk.controllers.playlist import (
     get_playlist,
     update_playlist,
     add_item_to_playlist,
@@ -16,20 +16,18 @@ from controllers.playlist import (
     delete_item_from_playlist,
     delete_playlist,
 )
-from controllers.file_upload import upload_file
-from models.playlist_types import PlaylistItemType, UpdatePlaylistRequest
-from models.dream_types import UpdateDreamRequest
+from edream_sdk.controllers.file_upload import upload_file
+from edream_sdk.models.playlist_types import PlaylistItemType, UpdatePlaylistRequest
+from edream_sdk.models.dream_types import UpdateDreamRequest
 
 
 def run():
     # Initialize ApiClient with backend_url and api_key instance
-    initialize_api_client(
-        backend_url="http://localhost:8081/api/v1", api_key="your_api_key"
-    )
+    initialize_api_client(backend_url="http://localhost:8081/api/v1", api_key="API_KEY")
 
     # user
-    # user = get_logged_user()
-    # print(user)
+    user = get_logged_user()
+    print(user)
 
     # dream
     # get_dream("55353076-f985-4a0c-bd1b-91ee727794fb")

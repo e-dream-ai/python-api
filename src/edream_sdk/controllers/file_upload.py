@@ -3,7 +3,7 @@ import math
 from typing import Optional, List
 from dataclasses import asdict
 from pathlib import Path
-from models.file_upload_types import (
+from ..models.file_upload_types import (
     CreateMultipartUploadFormValues,
     MultipartUpload,
     CompleteMultipartUploadFormValues,
@@ -11,9 +11,9 @@ from models.file_upload_types import (
     CompletedPart,
     RefreshMultipartUploadUrlFormValues,
 )
-from models.dream_types import DreamResponseWrapper, Dream
-from client.api_client import ApiClient
-from utils.api_utils import deserialize_api_response
+from ..models.dream_types import DreamResponseWrapper, Dream
+from ..client.api_client import ApiClient
+from ..utils.api_utils import deserialize_api_response
 
 part_size = 1024 * 1024 * 200  # 200 MB
 retry_delay: float = 0.2

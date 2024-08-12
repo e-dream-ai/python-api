@@ -14,3 +14,6 @@ __pycache__
 # log
 flask.log
 rq_worker.log
+
+# dist
+dist

@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edream-sdk"
+version = "0.1.0"
+description = "edream sdk"
+authors = [
+    { name = "Scott Draves", email = "spot@draves.org" },
+    { name = "Alejandro Casillas", email = "ealejandrocasillas@gmail.com" },
+]
+# license = ""
+dependencies = [
+    "requests",
+    "dacite",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]

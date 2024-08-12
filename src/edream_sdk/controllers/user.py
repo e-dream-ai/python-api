@@ -1,8 +1,8 @@
 from typing import Optional
-from client.api_client import ApiClient
-from models.api_types import ApiResponse
-from models.user_types import UserResponseWrapper
-from utils.api_utils import deserialize_api_response
+from ..client.api_client import ApiClient
+from ..models.api_types import ApiResponse
+from ..models.user_types import UserResponseWrapper
+from ..utils.api_utils import deserialize_api_response
 
 
 def get_logged_user() -> Optional[ApiResponse[UserResponseWrapper]]:

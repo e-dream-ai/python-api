@@ -1,67 +1,50 @@
-from edream_sdk.client.api_client import initialize_api_client
-from edream_sdk.controllers.user import get_logged_user
-from edream_sdk.controllers.dream import (
-    get_dream,
-    update_dream,
-    get_dream_vote,
-    upvote_dream,
-    downvote_dream,
-    delete_dream,
-)
-from edream_sdk.controllers.playlist import (
-    get_playlist,
-    update_playlist,
-    add_item_to_playlist,
-    add_file_to_playlist,
-    delete_item_from_playlist,
-    delete_playlist,
-)
-from edream_sdk.controllers.file_upload import upload_file
 from edream_sdk.models.playlist_types import PlaylistItemType, UpdatePlaylistRequest
 from edream_sdk.models.dream_types import UpdateDreamRequest
+from edream_sdk.client import create_edream_client
 
 
 def run():
     # Initialize ApiClient with backend_url and api_key instance
-    initialize_api_client(backend_url="http://localhost:8081/api/v1", api_key="API_KEY")
+    edream_client = create_edream_client(
+        backend_url="http://localhost:8081/api/v1", api_key="your_api_key"
+    )
 
     # user
-    user = get_logged_user()
-    print(user)
+    # user = edream_client.get_logged_user()
 
     # dream
-    # get_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
-    # get_dream_vote("55353076-f985-4a0c-bd1b-91ee727794fb")
-    # update_dream(
+    # dream = edream_client.get_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
+    # edream_client.get_dream_vote("55353076-f985-4a0c-bd1b-91ee727794fb")
+    # edream_client.update_dream(
     #     "55353076-f985-4a0c-bd1b-91ee727794fb",
     #     request_data=UpdateDreamRequest(name="name python"),
     # )
-    # upvote_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
-    # downvote_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
-    # delete_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
+    # edream_client.upvote_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
+    # edream_client.downvote_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
+    # edream_client.delete_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
 
     # playlist
-    # get_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
-    # update_playlist(
+    # playlist = edream_client.get_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
+    # edream_client.update_playlist(
     #     "b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4",
     #     request_data=UpdatePlaylistRequest(name="name python"),
     # )
-    # add_item_to_playlist(
+    # edream_client.add_item_to_playlist(
     #     playlist_uuid="b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4",
     #     type=PlaylistItemType.DREAM,
     #     item_uuid="d20cad5c-b294-4094-a19d-f5ab043980ae",
     # )
-    # delete_item_from_playlist(
+    # edream_client.delete_item_from_playlist(
     #     uuid="b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4", playlist_item_id=324
     # )
-    # add_file_to_playlist(
+    # edream_client.add_file_to_playlist(
     #     uuid="b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4",
     #     file_path="path_to_file/python_video.mp4",
     # )
-    # delete_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
+    # edream_client.delete_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
 
     # file
-    # upload_file("path_to_file/python_video.mp4")
+    # edream_client.upload_file("path_to_file/python_video.mp4")
     pass
 
 

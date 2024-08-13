@@ -10,7 +10,7 @@ pip install build
 
 #### Build package
 
-Run
+Build the package
 
 ```sh
 python -m build
@@ -18,8 +18,8 @@ python -m build
 
 This command generates distribution archives in the dist/ directory. You’ll get:
 
-- A source distribution (.tar.gz).
-- A wheel distribution (.whl).
+- A source distribution (.tar.gz)
+- A wheel distribution (.whl)
 
 #### Installation package from local build
 
@@ -46,3 +46,5 @@ pip uninstall edream_sdk
 ```
 
 #### Publish package
+
+Pending...

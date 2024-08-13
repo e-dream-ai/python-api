@@ -5,48 +5,28 @@ from typing import Optional, Any, Dict
 class ApiClient:
     """
     A client for making HTTP requests to a backend API
-    Ensures that only one instance of ApiClient can exist (singleton pattern)
     """
-
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(ApiClient, cls).__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
 
     def __init__(
         self, backend_url: Optional[str] = None, api_key: Optional[str] = None
     ):
-        # Ensure the constructor is only run once
-        if not self._initialized:
-            if backend_url is None or api_key is None:
-                raise ValueError(
-                    "backend_url and api_key must be provided for the first initialization"
-                )
-            self.backend_url = backend_url
-            self.api_key = api_key
-            self.session = requests.Session()
-            self.session.headers.update(
-                {
-                    "Accept": "*/*",
-                    "Connection": "keep-alive",
-                    "Content-Type": "application/json",
-                    "Authorization": f"Api-Key {self.api_key}",
-                }
-            )
-            self.initialized = True
-
-    @classmethod
-    def get_instance(cls):
-        if cls._instance is None:
+        if backend_url is None or api_key is None:
             raise ValueError(
-                "ApiClient is not initialized, call ApiClient(backend_url, api_key) first"
+                "backend_url and api_key must be provided for the first initialization"
             )
-        return cls._instance
+        self.backend_url = backend_url
+        self.api_key = api_key
+        self.session = requests.Session()
+        self.session.headers.update(
+            {
+                "Accept": "*/*",
+                "Connection": "keep-alive",
+                "Content-Type": "application/json",
+                "Authorization": f"Api-Key {self.api_key}",
+            }
+        )
 
-    def request(
+    def _request(
         self,
         method: str,
         endpoint: str,
@@ -82,25 +62,14 @@ class ApiClient:
             print(f"Value error occurred: {val_err}")
             raise
 
-    def get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Any:
-        return self.request("GET", endpoint, params=params)
+    def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Any:
+        return self._request("GET", endpoint, params=params)
 
-    def post(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
-        return self.request("POST", endpoint, data=data)
+    def _post(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
+        return self._request("POST", endpoint, data=data)
 
-    def put(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
-        return self.request("PUT", endpoint, data=data)
+    def _put(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
+        return self._request("PUT", endpoint, data=data)
 
-    def delete(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
-        return self.request("DELETE", endpoint, data=data)
-
-
-# Module-level variable to hold the initialized ApiClient instance
-api_client_instance = None
-
-
-def initialize_api_client(backend_url: str, api_key: str):
-    global api_client_instance
-    if api_client_instance is None:
-        api_client_instance = ApiClient(backend_url=backend_url, api_key=api_key)
-    return api_client_instance
+    def _delete(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
+        return self._request("DELETE", endpoint, data=data)

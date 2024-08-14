@@ -109,9 +109,8 @@ class UpdateDreamRequest:
 # Data class for SetDreamProcessedRequest
 @dataclass
 class SetDreamProcessedRequest:
-    name: Optional[str] = None
-    video: Optional[str] = None
-    thumbnail: Optional[str] = None
-    activityLevel: Optional[int] = None
-    featureRank: Optional[int] = None
-    displayedOwner: Optional[int] = None
+    processed_video_size: Optional[int] = None
+    processed_video_frames: Optional[int] = None
+    process_video_fps: Optional[int] = None
+    activity_level: Optional[float] = None
+    filmstrip_frames_array: Optional[List[str]] = None

@@ -5,6 +5,7 @@ from ..models.dream_types import (
     DreamResponseWrapper,
     DreamVoteResponseWrapper,
     UpdateDreamRequest,
+    SetDreamProcessedRequest,
 )
 from ..utils.api_utils import deserialize_api_response
 
@@ -52,6 +53,51 @@ class DreamClient:
         """
         data = self._get(f"/dream/{uuid}/vote")
         response = deserialize_api_response(data, DreamVoteResponseWrapper)
+        vote = response.data.vote
+        return vote
+
+    def set_dream_processing(
+        self, uuid: str
+    ) -> Optional[ApiResponse[DreamResponseWrapper]]:
+        """
+        Set dream to 'updating' status by its uuid
+        Args:
+            uuid (str): dream uuid
+        Returns:
+            Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
+        """
+        data = self._post(f"/dream/{uuid}/processing")
+        response = deserialize_api_response(data, DreamResponseWrapper)
+        vote = response.data.vote
+        return vote
+
+    def set_dream_processed(
+        self, uuid: str, request_data: SetDreamProcessedRequest
+    ) -> Optional[ApiResponse[DreamResponseWrapper]]:
+        """
+        Set dream to 'processed' status by its uuid
+        Args:
+            uuid (str): dream uuid
+        Returns:
+            Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
+        """
+        data = self._post(f"/dream/{uuid}/processed")
+        response = deserialize_api_response(data, DreamResponseWrapper)
+        vote = response.data.vote
+        return vote
+
+    def set_dream_failed(
+        self, uuid: str
+    ) -> Optional[ApiResponse[DreamResponseWrapper]]:
+        """
+        Set dream to 'failed' status by its uuid
+        Args:
+            uuid (str): dream uuid
+        Returns:
+            Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
+        """
+        data = self._post(f"/dream/{uuid}/failed")
+        response = deserialize_api_response(data, DreamResponseWrapper)
         vote = response.data.vote
         return vote
 

@@ -104,3 +104,14 @@ class UpdateDreamRequest:
     activityLevel: Optional[int] = None
     featureRank: Optional[int] = None
     displayedOwner: Optional[int] = None
+
+
+# Data class for SetDreamProcessedRequest
+@dataclass
+class SetDreamProcessedRequest:
+    name: Optional[str] = None
+    video: Optional[str] = None
+    thumbnail: Optional[str] = None
+    activityLevel: Optional[int] = None
+    featureRank: Optional[int] = None
+    displayedOwner: Optional[int] = None

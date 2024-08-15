@@ -66,10 +66,10 @@ class DreamClient:
         Returns:
             Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
         """
-        data = self._post(f"/dream/{uuid}/processing")
+        data = self._post(f"/dream/{uuid}/status/processing")
         response = deserialize_api_response(data, DreamResponseWrapper)
-        vote = response.data.vote
-        return vote
+        dream = response.data.dream
+        return dream
 
     def set_dream_processed(
         self, uuid: str, request_data: SetDreamProcessedRequest
@@ -81,10 +81,11 @@ class DreamClient:
         Returns:
             Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
         """
-        data = self._post(f"/dream/{uuid}/processed")
+        request_data_dict = asdict(request_data)
+        data = self._post(f"/dream/{uuid}/status/processed", request_data_dict)
         response = deserialize_api_response(data, DreamResponseWrapper)
-        vote = response.data.vote
-        return vote
+        dream = response.data.dream
+        return dream
 
     def set_dream_failed(
         self, uuid: str
@@ -96,10 +97,10 @@ class DreamClient:
         Returns:
             Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
         """
-        data = self._post(f"/dream/{uuid}/failed")
+        data = self._post(f"/dream/{uuid}/status/failed")
         response = deserialize_api_response(data, DreamResponseWrapper)
-        vote = response.data.vote
-        return vote
+        dream = response.data.dream
+        return dream
 
     def upvote_dream(self, uuid: str) -> Optional[ApiResponse[DreamResponseWrapper]]:
         """

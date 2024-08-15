@@ -19,3 +19,6 @@ rq_worker.log
 
 # dist
 dist
+
+# egg-info
+*.egg-info

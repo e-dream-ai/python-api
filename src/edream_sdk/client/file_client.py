@@ -12,7 +12,7 @@ from ..models.file_upload_types import (
     CompletedPart,
     RefreshMultipartUploadUrlFormValues,
 )
-from ..models.dream_types import DreamResponseWrapper, Dream
+from ..models.dream_types import DreamResponseWrapper, Dream, DreamStatusType
 from ..utils.api_utils import deserialize_api_response
 
 part_size = 1024 * 1024 * 200  # 200 MB
@@ -120,6 +120,24 @@ class FileClient:
         multipart_upload = response.data
         return multipart_upload
 
+    def create_dream_file_multipart_upload(
+        self,
+        uuid: str,
+        request_data: CreateMultipartUploadFormValues,
+    ) -> MultipartUpload:
+        """
+        Creates multipart upload
+        Args:
+            request_data (CreateMultipartUploadFormValues): multipart upload request form
+        Returns:
+            MultipartUpload: multipart upload data
+        """
+        request_data_dict = asdict(request_data)
+        data = self._post(f"/dream/{uuid}/create-multipart-upload", request_data_dict)
+        response = deserialize_api_response(data, MultipartUpload)
+        multipart_upload = response.data
+        return multipart_upload
+
     def refresh_multipart_upload_url(
         self,
         uuid: str,
@@ -203,7 +221,7 @@ class FileClient:
         response = deserialize_api_response(data, DreamResponseWrapper)
         return response.data
 
-    def upload_file(self, file_path: str) -> Dream:
+    def upload_file(self, file_path: str, type: DreamStatusType) -> Dream:
         """
         Complete function to upload file to s3 creating a dream on process
         Args:
@@ -218,11 +236,26 @@ class FileClient:
         total_parts = calculate_total_parts(file_size)
 
         # create multipart upload
-        multipart_upload: MultipartUpload = self.create_multipart_upload(
-            CreateMultipartUploadFormValues(
-                name=file_name, extension=file_extension, nsfw=False, parts=total_parts
+        multipart_upload: MultipartUpload
+
+        if type == DreamStatusType.Dream:
+            multipart_upload = self.create_multipart_upload(
+                CreateMultipartUploadFormValues(
+                    name=file_name,
+                    extension=file_extension,
+                    nsfw=False,
+                    parts=total_parts,
+                )
             )
-        )
+        else:
+            multipart_upload = self.create_multipart_upload(
+                CreateMultipartUploadFormValues(
+                    name=file_name,
+                    extension=file_extension,
+                    nsfw=False,
+                    parts=total_parts,
+                )
+            )
 
         dream = multipart_upload.dream
         dream_uuid = dream.uuid

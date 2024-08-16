@@ -14,6 +14,13 @@ class DreamStatusType(Enum):
     PROCESSED = "processed"
 
 
+# Enum for DreamFileType
+class DreamStatusType(Enum):
+    DREAM = "dream"
+    THUMBNAIL = "thumbnail"
+    FILMSTRIP = "filmstrip"
+
+
 # Data class for Dream
 @dataclass
 class Dream:

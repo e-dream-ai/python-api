@@ -45,6 +45,11 @@ def run():
 
     # file
     # edream_client.upload_file("path_to_file/python_video.mp4")
+    # edream_client.download_file(
+    #     "file_url",
+    #     "file_path",
+    # )
+
     pass
 
 

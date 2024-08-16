@@ -1,3 +1,4 @@
+import os
 import requests
 import math
 from typing import Optional, List
@@ -31,6 +32,45 @@ def calculate_total_parts(file_size: int) -> int:
 
 
 class FileClient:
+
+    def download_file(self, url: str, file_path: Optional[str] = None) -> bool:
+        DOWNLOAD_CHUNCK_SIZE = 20 * 1024 * 1024
+
+        if file_path is None:
+            # Default to basename of URL if no path is provided
+            file_path = os.path.basename(url)
+
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        try:
+            # Send a HEAD request to get the content length
+            head_response = requests.head(url)
+            head_response.raise_for_status()
+            file_size = int(head_response.headers.get("content-length", 0))
+
+            # Send a GET request to the URL
+            response = requests.get(url, stream=True)
+            # Raise an error for bad status codes
+            response.raise_for_status()
+
+            # In progreess bytes downloaded
+            bytes_downloaded = 0
+
+            # Write the content to a file
+            with open(file_path, "wb") as file:
+                for chunk in response.iter_content(chunk_size=DOWNLOAD_CHUNCK_SIZE):
+                    if chunk:
+                        file.write(chunk)
+                        bytes_downloaded += len(chunk)
+
+                    progress_percentage = (bytes_downloaded / file_size) * 100
+                    print(f"Download progress: {progress_percentage:.2f}%")
+
+        except requests.RequestException as e:
+            return False
+
+        return True
 
     def upload_file_request(
         self,
@@ -203,7 +243,6 @@ class FileClient:
                 if not part_data:
                     break
 
-                print(f"Uploading part {part_number}")
                 etag = self.upload_file_part(
                     uuid=dream_uuid,
                     upload_id=upload_id,

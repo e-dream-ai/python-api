@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, List
-from .dream_types import Dream
+from .dream_types import Dream, DreamFileType
 
 
 # Data class for CreateMultipartUploadFormValues
@@ -11,6 +11,19 @@ class CreateMultipartUploadFormValues:
     extension: Optional[str] = None
     parts: Optional[int] = None
     nsfw: Optional[bool] = None
+    frameNumber: Optional[int] = None
+    processed: Optional[bool] = None
+
+
+# Data class for CreateDreamFileMultipartUploadFormValues
+@dataclass
+class CreateDreamFileMultipartUploadFormValues:
+    type: DreamFileType
+    name: Optional[str] = None
+    extension: Optional[str] = None
+    parts: Optional[int] = None
+    frameNumber: Optional[int] = None
+    processed: Optional[bool] = None
 
 
 # Data class for MultipartUpload
@@ -39,18 +52,32 @@ class CompletedPart:
 # Data class for RefreshMultipartUploadUrlFormValues
 @dataclass
 class RefreshMultipartUploadUrlFormValues:
-    extension: str
+    type: DreamFileType
     uploadId: str
+    extension: str
     part: int
+    frameNumber: Optional[int] = None
+    processed: Optional[bool] = None
 
 
 # Data class for CompleteMultipartUploadFormValues
 @dataclass
 class CompleteMultipartUploadFormValues:
+    type: DreamFileType
+    uploadId: str
     name: Optional[str] = None
     extension: Optional[str] = None
     parts: Optional[List[CompletedPart]] = None
-    uploadId: Optional[str] = None
+    frameNumber: Optional[int] = None
+    processed: Optional[bool] = None
+
+
+# Data class for CompleteMultipartUploadFormValues
+@dataclass
+class UploadFileOptions:
+    frame_number: Optional[int] = None
+    processed: Optional[bool] = None
+    uuid: Optional[str] = None
 
 
 # Data class for CompleteMultipartUploadFormValues

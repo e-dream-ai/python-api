@@ -1,5 +1,9 @@
 from edream_sdk.models.playlist_types import PlaylistItemType, UpdatePlaylistRequest
-from edream_sdk.models.dream_types import UpdateDreamRequest
+from edream_sdk.models.dream_types import (
+    UpdateDreamRequest,
+    DreamFileType,
+)
+from edream_sdk.models.file_upload_types import UploadFileOptions
 from edream_sdk.client import create_edream_client
 
 
@@ -44,7 +48,27 @@ def run():
     # edream_client.delete_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
 
     # file
-    # edream_client.upload_file("path_to_file/python_video.mp4")
+    # edream_client.upload_file(
+    #     file_path="path_to_file",
+    #     type=DreamFileType.DREAM,
+    # )
+
+    # thumbnail
+    # edream_client.upload_file(
+    #     file_path="../assets/thumbnail.png",
+    #     type=DreamFileType.THUMBNAIL,
+    #     options=UploadFileOptions(uuid="55353076-f985-4a0c-bd1b-91ee727794fb"),
+    # )
+
+    # filmstrip
+    # edream_client.upload_file(
+    #     file_path="../assets/frame-701.jpg",
+    #     type=DreamFileType.FILMSTRIP,
+    #     options=UploadFileOptions(
+    #         uuid="55353076-f985-4a0c-bd1b-91ee727794fb", frame_number=701
+    #     ),
+    # )
+
     # edream_client.download_file(
     #     "file_url",
     #     "file_path",

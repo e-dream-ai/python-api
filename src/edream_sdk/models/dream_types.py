@@ -15,10 +15,13 @@ class DreamStatusType(Enum):
 
 
 # Enum for DreamFileType
-class DreamStatusType(Enum):
+class DreamFileType(str, Enum):
     DREAM = "dream"
     THUMBNAIL = "thumbnail"
     FILMSTRIP = "filmstrip"
+
+    def to_dict(self):
+        return self.value
 
 
 # Data class for Dream

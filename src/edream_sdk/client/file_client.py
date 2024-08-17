@@ -11,8 +11,10 @@ from ..models.file_upload_types import (
     RefreshMultipartUpload,
     CompletedPart,
     RefreshMultipartUploadUrlFormValues,
+    UploadFileOptions,
+    CreateDreamFileMultipartUploadFormValues,
 )
-from ..models.dream_types import DreamResponseWrapper, Dream, DreamStatusType
+from ..models.dream_types import DreamResponseWrapper, Dream, DreamFileType
 from ..utils.api_utils import deserialize_api_response
 
 part_size = 1024 * 1024 * 200  # 200 MB
@@ -123,7 +125,7 @@ class FileClient:
     def create_dream_file_multipart_upload(
         self,
         uuid: str,
-        request_data: CreateMultipartUploadFormValues,
+        request_data: CreateDreamFileMultipartUploadFormValues,
     ) -> MultipartUpload:
         """
         Creates multipart upload
@@ -161,11 +163,14 @@ class FileClient:
     def upload_file_part(
         self,
         uuid: str,
+        type: DreamFileType,
         upload_id: str,
         presigned_url: str,
         part_number: int,
         file_part: bytes,
         file_type: Optional[str] = None,
+        frame_number: Optional[int] = None,
+        processed: Optional[bool] = None,
     ) -> Optional[str]:
         """
         Refreshes multipart upload part
@@ -195,7 +200,12 @@ class FileClient:
                     refresh_result = self.refresh_multipart_upload_url(
                         uuid,
                         RefreshMultipartUploadUrlFormValues(
-                            uploadId=upload_id, part=part_number, extension=file_type
+                            type=type,
+                            uploadId=upload_id,
+                            part=part_number,
+                            extension=file_type,
+                            frameNumber=frame_number,
+                            processed=processed,
                         ),
                     )
                     new_url = refresh_result.url
@@ -221,7 +231,12 @@ class FileClient:
         response = deserialize_api_response(data, DreamResponseWrapper)
         return response.data
 
-    def upload_file(self, file_path: str, type: DreamStatusType) -> Dream:
+    def upload_file(
+        self,
+        file_path: str,
+        type: DreamFileType,
+        options: Optional[UploadFileOptions] = None,
+    ) -> Dream:
         """
         Complete function to upload file to s3 creating a dream on process
         Args:
@@ -235,26 +250,45 @@ class FileClient:
         file_size = path.stat().st_size
         total_parts = calculate_total_parts(file_size)
 
+        # dream name, needed only on DreamFileType.DREAM type
+        dream_name = (
+            file_name
+            if type == DreamFileType.DREAM
+            and (options is None or not options.processed)
+            else None
+        )
+
         # create multipart upload
         multipart_upload: MultipartUpload
 
-        if type == DreamStatusType.Dream:
+        if type == DreamFileType.DREAM and (
+            options is None or options.uuid is not None
+        ):
             multipart_upload = self.create_multipart_upload(
                 CreateMultipartUploadFormValues(
-                    name=file_name,
+                    name=dream_name,
                     extension=file_extension,
                     nsfw=False,
                     parts=total_parts,
                 )
             )
         else:
-            multipart_upload = self.create_multipart_upload(
-                CreateMultipartUploadFormValues(
-                    name=file_name,
+            multipart_upload = self.create_dream_file_multipart_upload(
+                uuid=options.uuid if options and options.uuid else None,
+                request_data=CreateDreamFileMultipartUploadFormValues(
+                    type=type,
+                    name=dream_name,
                     extension=file_extension,
-                    nsfw=False,
                     parts=total_parts,
-                )
+                    frameNumber=(
+                        options.frame_number
+                        if options and options.frame_number
+                        else None
+                    ),
+                    processed=(
+                        options.processed if options and options.processed else None
+                    ),
+                ),
             )
 
         dream = multipart_upload.dream
@@ -277,12 +311,21 @@ class FileClient:
                     break
 
                 etag = self.upload_file_part(
+                    type=type,
                     uuid=dream_uuid,
                     upload_id=upload_id,
                     part_number=part_number,
                     presigned_url=url,
                     file_part=part_data,
                     file_type=file_extension,
+                    frame_number=(
+                        options.frame_number
+                        if options and options.frame_number
+                        else None
+                    ),
+                    processed=(
+                        options.processed if options and options.processed else None
+                    ),
                 )
                 completed_parts.append(CompletedPart(ETag=etag, PartNumber=part_number))
                 bytes_uploaded += len(part_data)
@@ -293,10 +336,17 @@ class FileClient:
         completed_upload = self.complete_multipart_upload(
             dream.uuid,
             CompleteMultipartUploadFormValues(
+                type=type,
                 uploadId=upload_id,
                 extension=file_extension,
-                name=file_name,
+                name=dream_name,
                 parts=completed_parts,
+                frameNumber=(
+                    options.frame_number if options and options.frame_number else None
+                ),
+                processed=(
+                    options.processed if options and options.processed else None
+                ),
             ),
         )
 

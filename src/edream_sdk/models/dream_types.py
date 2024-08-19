@@ -119,8 +119,8 @@ class UpdateDreamRequest:
 # Data class for SetDreamProcessedRequest
 @dataclass
 class SetDreamProcessedRequest:
-    processed_video_size: Optional[int] = None
-    processed_video_frames: Optional[int] = None
-    process_video_fps: Optional[int] = None
-    activity_level: Optional[float] = None
-    filmstrip_frames_array: Optional[List[str]] = None
+    processedVideoSize: Optional[int] = None
+    processedVideoFrames: Optional[int] = None
+    processedVideoFPS: Optional[int] = None
+    activityLevel: Optional[float] = None
+    filmstrip: Optional[List[str]] = None

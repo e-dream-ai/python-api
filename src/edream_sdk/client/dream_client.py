@@ -2,6 +2,7 @@ from typing import Optional
 from dataclasses import asdict
 from ..models.api_types import ApiResponse
 from ..models.dream_types import (
+    Dream,
     DreamResponseWrapper,
     DreamVoteResponseWrapper,
     UpdateDreamRequest,
@@ -11,29 +12,27 @@ from ..utils.api_utils import deserialize_api_response
 
 
 class DreamClient:
-    def get_dream(self, uuid: str) -> Optional[ApiResponse[DreamResponseWrapper]]:
+    def get_dream(self, uuid: str) -> Optional[Dream]:
         """
         Retrieves a dream by its uuid
         Args:
             uuid (str): dream uuid
         Returns:
-            Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
+            Optional[Dream]: An `ApiResponse` object containing a `DreamResponseWrapper`
         """
         data = self._get(f"/dream/{uuid}")
         response = deserialize_api_response(data, DreamResponseWrapper)
         dream = response.data.dream
         return dream
 
-    def update_dream(
-        self, uuid: str, request_data: UpdateDreamRequest
-    ) -> Optional[ApiResponse[DreamResponseWrapper]]:
+    def update_dream(self, uuid: str, request_data: UpdateDreamRequest) -> Dream:
         """
         Updates a dream by its uuid
         Args:
             uuid (str): dream uuid
             request_data (UpdateDreamRequest): dream data
         Returns:
-            Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
+            Dream: An `ApiResponse` object containing a `DreamResponseWrapper`
         """
         request_data_dict = asdict(request_data)
         data = self._put(f"/dream/{uuid}", request_data_dict)
@@ -56,15 +55,13 @@ class DreamClient:
         vote = response.data.vote
         return vote
 
-    def set_dream_processing(
-        self, uuid: str
-    ) -> Optional[ApiResponse[DreamResponseWrapper]]:
+    def set_dream_processing(self, uuid: str) -> Dream:
         """
         Set dream to 'updating' status by its uuid
         Args:
             uuid (str): dream uuid
         Returns:
-            Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
+            Dream: An `ApiResponse` object containing a `DreamResponseWrapper`
         """
         data = self._post(f"/dream/{uuid}/status/processing")
         response = deserialize_api_response(data, DreamResponseWrapper)
@@ -73,13 +70,13 @@ class DreamClient:
 
     def set_dream_processed(
         self, uuid: str, request_data: SetDreamProcessedRequest
-    ) -> Optional[ApiResponse[DreamResponseWrapper]]:
+    ) -> Dream:
         """
         Set dream to 'processed' status by its uuid
         Args:
             uuid (str): dream uuid
         Returns:
-            Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
+            Dream: An `ApiResponse` object containing a `DreamResponseWrapper`
         """
         request_data_dict = asdict(request_data)
         data = self._post(f"/dream/{uuid}/status/processed", request_data_dict)
@@ -87,22 +84,20 @@ class DreamClient:
         dream = response.data.dream
         return dream
 
-    def set_dream_failed(
-        self, uuid: str
-    ) -> Optional[ApiResponse[DreamResponseWrapper]]:
+    def set_dream_failed(self, uuid: str) -> Dream:
         """
         Set dream to 'failed' status by its uuid
         Args:
             uuid (str): dream uuid
         Returns:
-            Optional[ApiResponse[DreamResponseWrapper]]: An `ApiResponse` object containing a `DreamResponseWrapper`
+            Dream: An `ApiResponse` object containing a `DreamResponseWrapper`
         """
         data = self._post(f"/dream/{uuid}/status/failed")
         response = deserialize_api_response(data, DreamResponseWrapper)
         dream = response.data.dream
         return dream
 
-    def upvote_dream(self, uuid: str) -> Optional[ApiResponse[DreamResponseWrapper]]:
+    def upvote_dream(self, uuid: str) -> Dream:
         """
         Upvotes dream vote by its uuid
         Args:
@@ -115,7 +110,7 @@ class DreamClient:
         dream = response.data.dream
         return dream
 
-    def downvote_dream(self, uuid: str) -> Optional[ApiResponse[DreamResponseWrapper]]:
+    def downvote_dream(self, uuid: str) -> Dream:
         """
         Downvotes dream vote by its uuid
         Args:

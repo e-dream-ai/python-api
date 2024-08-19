@@ -55,17 +55,33 @@ def run():
 
     # thumbnail
     # edream_client.upload_file(
-    #     file_path="../assets/thumbnail.png",
+    #     file_path="./assets/thumbnail.png",
     #     type=DreamFileType.THUMBNAIL,
     #     options=UploadFileOptions(uuid="55353076-f985-4a0c-bd1b-91ee727794fb"),
     # )
 
     # filmstrip
     # edream_client.upload_file(
-    #     file_path="../assets/frame-701.jpg",
+    #     file_path="./assets/frame-701.jpg",
     #     type=DreamFileType.FILMSTRIP,
     #     options=UploadFileOptions(
     #         uuid="55353076-f985-4a0c-bd1b-91ee727794fb", frame_number=701
+    #     ),
+    # )
+
+    # thumbnail
+    # edream_client.upload_file(
+    #     file_path="./assets/thumbnail.png",
+    #     type=DreamFileType.THUMBNAIL,
+    #     options=UploadFileOptions(uuid="55353076-f985-4a0c-bd1b-91ee727794fb"),
+    # )
+
+    # video processed
+    # edream_client.upload_file(
+    #     file_path="./assets/dream.mp4",
+    #     type=DreamFileType.DREAM,
+    #     options=UploadFileOptions(
+    #         uuid="ca5493b1-db8e-4efb-bf1d-1c900d20cef8", processed=True
     #     ),
     # )
 

@@ -1,6 +1,8 @@
 import requests
 from typing import Optional, Any, Dict
 
+EDREAM_USER_AGENT = "EdreamSDK"
+
 
 class ApiClient:
     """
@@ -23,6 +25,7 @@ class ApiClient:
                 "Connection": "keep-alive",
                 "Content-Type": "application/json",
                 "Authorization": f"Api-Key {self.api_key}",
+                "User-Agent": EDREAM_USER_AGENT,
             }
         )
 

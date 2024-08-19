@@ -261,9 +261,7 @@ class FileClient:
         # create multipart upload
         multipart_upload: MultipartUpload
 
-        if type == DreamFileType.DREAM and (
-            options is None or options.uuid is not None
-        ):
+        if type == DreamFileType.DREAM and (options is None or options.uuid is None):
             multipart_upload = self.create_multipart_upload(
                 CreateMultipartUploadFormValues(
                     name=dream_name,

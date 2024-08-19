@@ -3,6 +3,7 @@ from dataclasses import asdict
 from ..models.api_types import ApiResponse
 from ..models.dream_types import Dream
 from ..models.playlist_types import (
+    Playlist,
     PlaylistResponseWrapper,
     PlaylistItemType,
     UpdatePlaylistRequest,
@@ -11,13 +12,13 @@ from ..utils.api_utils import deserialize_api_response
 
 
 class PlaylistClient:
-    def get_playlist(self, uuid: str) -> Optional[ApiResponse[PlaylistResponseWrapper]]:
+    def get_playlist(self, uuid: str) -> Playlist:
         """
         Retrieves a playlist by its uuid
         Args:
             uuid (str): playlist uuid
         Returns:
-            Optional[ApiResponse[PlaylistResponseWrapper]]: An `ApiResponse` object containing a `PlaylistResponseWrapper`
+            Playlist: An `ApiResponse` object containing a `PlaylistResponseWrapper`
         """
         data = self._get(f"/playlist/{uuid}")
         response = deserialize_api_response(data, PlaylistResponseWrapper)
@@ -26,14 +27,14 @@ class PlaylistClient:
 
     def update_playlist(
         self, uuid: str, request_data: UpdatePlaylistRequest
-    ) -> Optional[ApiResponse[PlaylistResponseWrapper]]:
+    ) -> Playlist:
         """
         Updates a playlist by its uuid
         Args:
             uuid (str): playlist uuid
             request_data (UpdatePlaylistRequest): playlist data
         Returns:
-            Optional[ApiResponse[PlaylistResponseWrapper]]: An `ApiResponse` object containing a `PlaylistResponseWrapper`
+            Playlist: An `ApiResponse` object containing a `PlaylistResponseWrapper`
         """
         request_data_dict = asdict(request_data)
         data = self._put(f"/playlist/{uuid}", request_data_dict)
@@ -43,7 +44,7 @@ class PlaylistClient:
 
     def add_item_to_playlist(
         self, playlist_uuid: str, type: PlaylistItemType, item_uuid: str
-    ) -> Optional[ApiResponse[PlaylistResponseWrapper]]:
+    ) -> Playlist:
         """
         Adds item to a playlist
         Args:
@@ -51,7 +52,7 @@ class PlaylistClient:
             type (PlaylistItemType): item type
             item_uuid (int): item uuid
         Returns:
-            Optional[ApiResponse[PlaylistResponseWrapper]]: An `ApiResponse` object containing a `PlaylistResponseWrapper`
+            Playlist: An `ApiResponse` object containing a `PlaylistResponseWrapper`
         """
         form = {"type": type.value, "uuid": item_uuid}
         data = self._put(f"/playlist/{playlist_uuid}/add-item", form)

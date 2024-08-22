@@ -1,6 +1,10 @@
+build==1.2.1
 certifi==2024.7.4
 charset-normalizer==3.3.2
 dacite==1.8.1
 idna==3.7
+installer==0.7.0
+packaging==24.1
+pyproject_hooks==1.1.0
 requests==2.32.3
 urllib3==2.2.2

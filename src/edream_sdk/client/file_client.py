@@ -17,8 +17,9 @@ from ..models.file_upload_types import (
 from ..models.dream_types import DreamResponseWrapper, Dream, DreamFileType
 from ..utils.api_utils import deserialize_api_response
 
+# download file part size
 part_size = 1024 * 1024 * 200  # 200 MB
-retry_delay: float = 0.2
+# upload part max retries
 max_retries = 3
 
 
@@ -36,6 +37,11 @@ def calculate_total_parts(file_size: int) -> int:
 class FileClient:
 
     def download_file(self, url: str, file_path: Optional[str] = None) -> bool:
+        """
+        Downloads a file from a url to a path
+        """
+
+        # DOWNLOAD_CHUNCK_SIZE = 20 MB
         DOWNLOAD_CHUNCK_SIZE = 20 * 1024 * 1024
 
         if file_path is None:
@@ -128,7 +134,7 @@ class FileClient:
         request_data: CreateDreamFileMultipartUploadFormValues,
     ) -> MultipartUpload:
         """
-        Creates multipart upload
+        Creates multipart upload for a dream file type (dream, thumbnail or filmstrip file)
         Args:
             request_data (CreateMultipartUploadFormValues): multipart upload request form
         Returns:
@@ -193,7 +199,7 @@ class FileClient:
             if result is not None:
                 return result
             else:
-                print(f"Attempt {attempt + 1} failed.")
+                # new attemp
                 attempt += 1
                 if attempt < max_retries:
                     print(f"Retrying part {attempt + 1}.")
@@ -250,7 +256,7 @@ class FileClient:
         file_size = path.stat().st_size
         total_parts = calculate_total_parts(file_size)
 
-        # dream name, needed only on DreamFileType.DREAM type
+        # dream name, needed only on DreamFileType.DREAM type, if not DreamFileType.DREAM set None
         dream_name = (
             file_name
             if type == DreamFileType.DREAM
@@ -261,6 +267,7 @@ class FileClient:
         # create multipart upload
         multipart_upload: MultipartUpload
 
+        # use create_multipart_upload to upload a new video file and create a new dream
         if type == DreamFileType.DREAM and (options is None or options.uuid is None):
             multipart_upload = self.create_multipart_upload(
                 CreateMultipartUploadFormValues(
@@ -270,6 +277,7 @@ class FileClient:
                     parts=total_parts,
                 )
             )
+        # use create_dream_file_multipart_upload to upload a new video file type (dream, thumbnail or filmstrip file) or update processed dream
         else:
             multipart_upload = self.create_dream_file_multipart_upload(
                 uuid=options.uuid if options and options.uuid else None,
@@ -308,6 +316,7 @@ class FileClient:
                 if not part_data:
                     break
 
+                # obtain etag from upload_file_part function call
                 etag = self.upload_file_part(
                     type=type,
                     uuid=dream_uuid,
@@ -330,7 +339,7 @@ class FileClient:
                 progress_percentage = (bytes_uploaded / file_size) * 100
                 print(f"Upload progress: {progress_percentage:.2f}%")
 
-        # complete upload
+        # complete upload request
         completed_upload = self.complete_multipart_upload(
             dream.uuid,
             CompleteMultipartUploadFormValues(

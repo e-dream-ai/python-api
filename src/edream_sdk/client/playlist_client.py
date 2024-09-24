@@ -2,6 +2,7 @@ from typing import Optional
 from dataclasses import asdict
 from ..models.api_types import ApiResponse
 from ..models.dream_types import Dream
+from ..models.dream_types import DreamFileType
 from ..models.playlist_types import (
     Playlist,
     PlaylistResponseWrapper,
@@ -69,7 +70,7 @@ class PlaylistClient:
         Returns:
             Optional[Dream]: Created Dream
         """
-        dream = self.upload_file(file_path)
+        dream = self.upload_file(file_path, type=DreamFileType.DREAM)
         self.add_item_to_playlist(
             playlist_uuid=uuid, type=PlaylistItemType.DREAM, item_uuid=dream.uuid
         )

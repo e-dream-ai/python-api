@@ -33,6 +33,7 @@ class Role:
 @dataclass
 class User:
     id: int
+    uuid: str
     email: Optional[str] = None
     name: Optional[str] = None
     description: Optional[str] = None

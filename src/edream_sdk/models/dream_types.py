@@ -124,3 +124,4 @@ class SetDreamProcessedRequest:
     processedVideoFPS: Optional[int] = None
     activityLevel: Optional[float] = None
     filmstrip: Optional[List[str]] = None
+    md5: Optional[str] = None

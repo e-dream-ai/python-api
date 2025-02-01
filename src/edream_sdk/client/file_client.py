@@ -288,7 +288,7 @@ class FileClient:
                     parts=total_parts,
                     frameNumber=(
                         options.frame_number
-                        if options and options.frame_number
+                        if options and options.frame_number is not None
                         else None
                     ),
                     processed=(
@@ -349,7 +349,9 @@ class FileClient:
                 name=dream_name,
                 parts=completed_parts,
                 frameNumber=(
-                    options.frame_number if options and options.frame_number else None
+                    options.frame_number
+                    if options and options.frame_number is not None
+                    else None
                 ),
                 processed=(
                     options.processed if options and options.processed else None

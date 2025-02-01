@@ -327,7 +327,7 @@ class FileClient:
                     file_type=file_extension,
                     frame_number=(
                         options.frame_number
-                        if options and options.frame_number
+                        if options and options.frame_number is not None
                         else None
                     ),
                     processed=(

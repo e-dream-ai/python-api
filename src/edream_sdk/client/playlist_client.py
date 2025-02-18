@@ -93,6 +93,40 @@ class PlaylistClient:
         response = deserialize_api_response(data, ApiResponse)
         return response.success
 
+    def add_keyframe_to_playlist(
+        self, playlist_uuid: str, keyframe_uuid: str
+    ) -> Playlist:
+        """
+        Adds keyframe to a playlist
+        Args:
+            playlist_uuid (str): playlist uuid
+            keyframe_uuid (int): keyframe uuid
+        Returns:
+            Playlist: An `ApiResponse` object containing a `PlaylistResponseWrapper`
+        """
+        form = {"uuid": keyframe_uuid}
+        data = self._post(f"/playlist/{playlist_uuid}/keyframe", form)
+        response = deserialize_api_response(data, PlaylistResponseWrapper)
+        playlist = response.data.playlist
+        return playlist
+
+    def delete_keyframe_from_playlist(
+        self,
+        uuid: str,
+        playlist_keyframe_id: int,
+    ) -> Optional[ApiResponse]:
+        """
+        Deletes keyframe from a playlist
+        Args:
+            uuid (str): playlist uuid
+            playlist_keyframe_id (int): playlist keyframe id
+        Returns:
+            Optional[ApiResponse]: An `ApiResponse` object
+        """
+        data = self._delete(f"/playlist/{uuid}/keyframe/{playlist_keyframe_id}")
+        response = deserialize_api_response(data, ApiResponse)
+        return response.success
+
     def delete_playlist(self, uuid: str) -> Optional[ApiResponse]:
         """
         Deletes a playlist

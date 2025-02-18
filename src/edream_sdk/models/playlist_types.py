@@ -1,8 +1,10 @@
 from enum import Enum
 from typing import List, Optional
 from dataclasses import dataclass
-from .dream_types import Dream
+from dataclasses_json import dataclass_json
 from .user_types import User
+from .dream_types import Dream
+from .keyframe_types import Keyframe
 
 
 # Enum for DreamStatusType
@@ -13,6 +15,7 @@ class PlaylistItemType(Enum):
 
 
 # Data class for PlaylistItem
+@dataclass_json
 @dataclass
 class PlaylistItem:
     id: int
@@ -26,7 +29,21 @@ class PlaylistItem:
     deleted_at: Optional[str] = None
 
 
+# Data class for PlaylistKeyframe
+@dataclass_json
+@dataclass
+class PlaylistKeyframe:
+    id: int
+    order: Optional[int] = None
+    keyframe: Optional[Keyframe] = None
+    playlist: Optional["Playlist"] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    deleted_at: Optional[str] = None
+
+
 # Data class for Playlist
+@dataclass_json
 @dataclass
 class Playlist:
     id: int
@@ -37,6 +54,7 @@ class Playlist:
     user: Optional[User] = None
     displayedOwner: Optional[User] = None
     items: Optional[List[PlaylistItem]] = None
+    playlistKeyframes: Optional[List[PlaylistKeyframe]] = None
     itemCount: Optional[int] = 0
     featureRank: Optional[int] = 0
     nsfw: Optional[bool] = None
@@ -45,12 +63,14 @@ class Playlist:
 
 
 # Data class for Playlist
+@dataclass_json
 @dataclass
 class PlaylistResponseWrapper:
     playlist: Optional[Playlist]
 
 
 # Data class for UpdatePlaylistRequest
+@dataclass_json
 @dataclass
 class UpdatePlaylistRequest:
     name: Optional[str] = None

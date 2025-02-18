@@ -1,8 +1,10 @@
 from enum import Enum
 from typing import List, Optional, Dict, ByteString
 from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 from .user_types import User
 from .vote_types import Vote
+from .keyframe_types import Keyframe
 
 
 # Enum for DreamStatusType
@@ -25,11 +27,12 @@ class DreamFileType(str, Enum):
 
 
 # Data class for Dream
+@dataclass_json
 @dataclass
 class Dream:
     id: int
-    user: User
     uuid: str
+    user:  Optional[User] = None
     name: Optional[str] = None
     thumbnail: Optional[str] = None
     activityLevel: Optional[int] = 0
@@ -47,6 +50,8 @@ class Dream:
     filmstrip: Optional[List[str]] = None
     upvotes: Optional[int] = None
     downvotes: Optional[int] = None
+    startKeyframe: Optional[Keyframe] = None
+    endKeyframe: Optional[Keyframe] = None
     processed_at: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
@@ -94,6 +99,7 @@ class MultipartUploadRequest:
 
 
 # Data class for DreamResponseWrapper
+@dataclass_json
 @dataclass
 class DreamResponseWrapper:
     dream: Optional[Dream]

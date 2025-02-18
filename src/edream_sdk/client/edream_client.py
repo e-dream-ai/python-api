@@ -1,12 +1,15 @@
 # edream_client.py
 from ..client.api_client import ApiClient
 from .dream_client import DreamClient
+from .keyframe_client import KeyframeClient
 from .playlist_client import PlaylistClient
 from .user_client import UserClient
 from .file_client import FileClient
 
 
-class EDreamClient(ApiClient, UserClient, DreamClient, PlaylistClient, FileClient):
+class EDreamClient(
+    ApiClient, UserClient, DreamClient, KeyframeClient, PlaylistClient, FileClient
+):
     pass
 
 

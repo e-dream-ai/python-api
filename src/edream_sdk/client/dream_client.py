@@ -123,7 +123,7 @@ class DreamClient:
         dream = response.data.dream
         return dream
 
-    def delete_dream(self, uuid: str) -> Optional[ApiResponse[ApiResponse]]:
+    def delete_dream(self, uuid: str) -> Optional[ApiResponse]:
         """
         Deletes a dream
         Args:

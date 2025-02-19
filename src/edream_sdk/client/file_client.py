@@ -1,10 +1,11 @@
 import os
 import requests
 import math
-from typing import Optional, List
-from dataclasses import asdict
+from typing import Optional, List, Dict, Any, Type, Union
+from dataclasses import asdict, is_dataclass
 from pathlib import Path
 from ..models.file_upload_types import (
+    FileType,
     CreateMultipartUploadFormValues,
     MultipartUpload,
     CompleteMultipartUploadFormValues,
@@ -12,15 +13,19 @@ from ..models.file_upload_types import (
     CompletedPart,
     RefreshMultipartUploadUrlFormValues,
     UploadFileOptions,
+    CompleteFileResponseWrapper,
     CreateDreamFileMultipartUploadFormValues,
 )
-from ..models.dream_types import DreamResponseWrapper, Dream, DreamFileType
+from ..models.dream_types import Dream
+from ..models.types import T
 from ..utils.api_utils import deserialize_api_response
 
-# download file part size
-part_size = 1024 * 1024 * 200  # 200 MB
-# upload part max retries
-max_retries = 3
+# FILE PART SIZE
+PART_SIZE = 1024 * 1024 * 200  # 200 MB
+# UPLOAD PART MAX RETRIES
+MAX_RETRIES = 3
+# DOWNLOAD_CHUNCK_SIZE = 20 MB
+DOWNLOAD_CHUNCK_SIZE = 20 * 1024 * 1024
 
 
 def calculate_total_parts(file_size: int) -> int:
@@ -31,19 +36,332 @@ def calculate_total_parts(file_size: int) -> int:
     Returns:
         int: total number of parts
     """
-    return max(math.ceil(file_size / part_size), 1)
+    return max(math.ceil(file_size / PART_SIZE), 1)
 
 
 class FileClient:
+
+    def _get_create_upload_endpoint(
+        self, type: FileType, uuid: Optional[str] = None
+    ) -> str:
+        """
+        Generates the endpoint for creating a multipart upload based on the file type
+        Args:
+            type (FileType): Type of the file
+            uuid (Optional[str]): UUID of the source (if applicable)
+        Returns:
+            str: Endpoint for creating multipart upload
+        """
+        if type == FileType.DREAM and not uuid:
+            return "/dream/create-multipart-upload"
+        elif type in [FileType.DREAM, FileType.FILMSTRIP, FileType.THUMBNAIL]:
+            return f"/dream/{uuid}/create-multipart-upload"
+        elif type == FileType.KEYFRAME:
+            return f"/keyframe/{uuid}/image/init"
+        else:
+            return f""
+
+    def _get_refresh_url_endpoint(
+        self, type: FileType, uuid: Optional[str] = None
+    ) -> str:
+        """
+        Generates the endpoint for refreshing a multipart upload URL
+        Args:
+            uuid (str): UUID of the resource
+        Returns:
+            str: Endpoint for refreshing URL
+        """
+        if type in [FileType.DREAM, FileType.FILMSTRIP, FileType.THUMBNAIL]:
+            return f"/dream/{uuid}/create-multipart-upload"
+        elif type == FileType.KEYFRAME:
+            return f""
+        else:
+            return f""
+
+    def _get_complete_upload_endpoint(
+        self, type: FileType, uuid: Optional[str] = None
+    ) -> str:
+        """
+        Generates the endpoint for completing a multipart upload
+        Args:
+            uuid (str): UUID of the resource
+        Returns:
+            str: Endpoint for completing upload
+        """
+        if type in [FileType.DREAM, FileType.FILMSTRIP, FileType.THUMBNAIL]:
+            return f"/dream/{uuid}/complete-multipart-upload"
+        elif type == FileType.KEYFRAME:
+            return f"/keyframe/{uuid}/image/complete"
+        else:
+            return f""
+
+    def _build_create_payload(
+        self,
+        type: FileType,
+        path: Path,
+        parts: Optional[int] = None,
+        options: Optional[UploadFileOptions] = None,
+    ) -> Dict[str, Any]:
+        """
+        Builds the payload for the upload request based on the file type and options.
+        Args:
+            type (FileType): Type of the file.
+            options (UploadFileOptions): Options for the upload.
+        Returns:
+            Dict[str, Any]: Payload for the upload request.
+        """
+        # Extract common options
+        file_extension = path.suffix.lstrip(".")
+
+        payload = {
+            "uuid": getattr(options, "uuid", None),
+            "parts": parts,
+            "extension": file_extension,
+        }
+
+        # Add type-specific fields to payload
+        if type == FileType.DREAM:
+            # dream name, needed only on FileType.DREAM type
+            file_name = path.stem
+            dream_name = file_name if type == FileType.DREAM else None
+
+            payload.update(
+                {
+                    "name": dream_name,
+                    "nsfw": getattr(options, "nsfw", None),
+                    "processed": getattr(options, "processed", None),
+                    "type": type,
+                }
+            )
+        elif type == FileType.THUMBNAIL:
+            payload.update(
+                {
+                    "type": type,
+                }
+            )
+        # frameNumber must be required for FILMSTRIP
+        elif type == FileType.FILMSTRIP:
+            payload.update(
+                {
+                    "frameNumber": getattr(options, "frame_number", None),
+                    "type": type,
+                }
+            )
+        elif type == FileType.KEYFRAME:
+            payload.update({})
+
+        return payload
+
+    def _build_refresh_payload(
+        self,
+        type: FileType,
+        upload_id: str,
+        part_number: int,
+        file_extension: str,
+        options: UploadFileOptions,
+    ) -> Dict[str, Any]:
+        """
+        Builds the payload for the refresh multipart upload URL request.
+        Args:
+            type (FileType): The type of the file.
+            upload_id (str): The ID of the multipart upload.
+            part_number (int): The part number being refreshed.
+            file_extension (str): The file extension (e.g., "mp4").
+            options (UploadFileOptions): Options for the upload.
+        Returns:
+            Dict[str, Any]: The payload for the refresh multipart upload URL request.
+        """
+        # Base payload
+        payload = {
+            "type": type,
+            "uploadId": upload_id,
+            "part": part_number,
+            "extension": file_extension,
+        }
+
+        # Add optional fields based on file type
+        if type == FileType.DREAM:
+            payload.update(
+                {
+                    "processed": getattr(options, "processed", None),
+                }
+            )
+        elif type == FileType.FILMSTRIP:
+            payload.update(
+                {
+                    "frameNumber": getattr(options, "frame_umber", None),
+                }
+            )
+
+        return payload
+
+    def _build_complete_payload(
+        self,
+        type: FileType,
+        path: Path,
+        upload_id: str,
+        parts: List[CompletedPart],
+        options: Optional[UploadFileOptions] = None,
+    ) -> Dict[str, Any]:
+        """
+        Builds the payload for the complete multipart upload request.
+        Args:
+            upload_id (str): The ID of the multipart upload.
+            parts (List[Dict[str, Any]]): List of completed parts with ETags and part numbers.
+            file_extension (str): The file extension (e.g., "mp4").
+            type (FileType): The type of the file.
+            options (UploadFileOptions): Options for the upload.
+        Returns:
+            Dict[str, Any]: The payload for the complete multipart upload request.
+        """
+        # Extract common options
+        file_extension = path.suffix.lstrip(".")
+
+        payload = {
+            "uploadId": upload_id,
+            "parts": [part.to_dict() for part in parts],
+            "extension": file_extension,
+            "type": type,
+        }
+
+        # Add optional fields based on file type
+        if type == FileType.DREAM:
+            # dream name, needed only on FileType.DREAM type
+            file_name = path.stem
+            dream_name = file_name if type == FileType.DREAM else None
+            payload.update(
+                {
+                    "name": dream_name,
+                    "nsfw": getattr(options, "nsfw", None),
+                    "processed": getattr(options, "processed", None),
+                }
+            )
+        elif type == FileType.FILMSTRIP:
+            payload.update(
+                {
+                    "frameNumber": getattr(options, "frame_number", None),
+                }
+            )
+        elif type == FileType.THUMBNAIL:
+            # No additional fields for THUMBNAIL
+            pass
+        elif type == FileType.KEYFRAME:
+            # No additional fields for KEYFRAME
+            pass
+
+        return payload
+
+    def _make_upload_request(
+        self,
+        endpoint: str,
+        request_data: Union[
+            Dict[str, Any], Any
+        ],  # or Dict[str, Any] | Any in Python 3.10+
+        response_type: Type[T],
+    ) -> T:
+        """
+        Generic helper function to handle multipart upload requests.
+        Args:
+            endpoint (str): The API endpoint.
+            request_data (Any): The request data (dataclass instance).
+            response_type (Type[T]): The expected response type.
+        Returns:
+            T: The deserialized response data.
+        """
+        # Convert request data to dictionary if it's a dataclass
+        request_data_dict = (
+            asdict(request_data) if is_dataclass(request_data) else request_data
+        )
+
+        # Make the API call
+        data = self._post(endpoint, request_data_dict)
+
+        # Deserialize the response
+        response = deserialize_api_response(data, response_type)
+        return response.data
+
+    def _create_multipart_upload(
+        self,
+        endpoint: str,
+        request_data: CreateMultipartUploadFormValues,
+    ) -> MultipartUpload:
+        """
+        Creates multipart upload.
+        Args:
+            endpoint (str): The API endpoint.
+            request_data (CreateMultipartUploadFormValues): Multipart upload request form.
+        Returns:
+            MultipartUpload: Multipart upload data.
+        """
+        return self._make_upload_request(endpoint, request_data, MultipartUpload)
+
+    def _refresh_multipart_upload(
+        self,
+        endpoint: str,
+        request_data: RefreshMultipartUploadUrlFormValues,
+    ) -> RefreshMultipartUpload:
+        """
+        Refreshes multipart upload URL.
+        Args:
+            endpoint (str): The API endpoint.
+            request_data (RefreshMultipartUploadUrlFormValues): Request multipart upload request form.
+        Returns:
+            RefreshMultipartUpload: Refresh multipart upload URL data.
+        """
+        return self._make_upload_request(endpoint, request_data, RefreshMultipartUpload)
+
+    def _complete_multipart_upload(
+        self,
+        endpoint: str,
+        request_data: CompleteMultipartUploadFormValues,
+    ) -> CompleteFileResponseWrapper:
+        """
+        Completes multipart upload.
+        Args:
+            endpoint (str): The API endpoint.
+            request_data (CompleteMultipartUploadFormValues): Complete multipart upload request form.
+        Returns:
+            CompleteFileResponseWrapper: Response after completing upload.
+        """
+        return self._make_upload_request(
+            endpoint, request_data, CompleteFileResponseWrapper
+        )
+
+    def _upload_file_request(
+        self,
+        presigned_url: str,
+        file_part: bytes,
+        file_type: Optional[str] = None,
+    ) -> Optional[str]:
+        """
+        Upload file request to s3 using `requests`
+        Args:
+            presigned_url (str): presigned s3 url
+            file_part (bytes): file part bytes
+            file_type (str): file type
+        Returns:
+            Optional[str]: etag str
+        """
+        headers = {"Content-Type": file_type or ""}
+        try:
+            response = requests.put(
+                presigned_url,
+                data=file_part,
+                headers=headers,
+            )
+            response.raise_for_status()
+            # Extract and clean the ETag header
+            etag = response.headers.get("etag", "")
+            cleaned_etag = etag.strip('"')
+            return cleaned_etag
+        except requests.exceptions.RequestException as e:
+            # print(f"An error occurred: {e}")
+            return None
 
     def download_file(self, url: str, file_path: Optional[str] = None) -> bool:
         """
         Downloads a file from a url to a path
         """
-
-        # DOWNLOAD_CHUNCK_SIZE = 20 MB
-        DOWNLOAD_CHUNCK_SIZE = 20 * 1024 * 1024
-
         if file_path is None:
             # Default to basename of URL if no path is provided
             file_path = os.path.basename(url)
@@ -80,108 +398,21 @@ class FileClient:
 
         return True
 
-    def upload_file_request(
-        self,
-        presigned_url: str,
-        file_part: bytes,
-        file_type: Optional[str] = None,
-    ) -> Optional[str]:
-        """
-        Upload file request using `requests`
-        Args:
-            presigned_url (str): presigned s3 url
-            file_part (bytes): file part bytes
-            file_type (str): file type
-        Returns:
-            Optional[str]: etag str
-        """
-        headers = {"Content-Type": file_type or ""}
-        try:
-            response = requests.put(
-                presigned_url,
-                data=file_part,
-                headers=headers,
-            )
-            response.raise_for_status()
-            # Extract and clean the ETag header
-            etag = response.headers.get("etag", "")
-            cleaned_etag = etag.strip('"')
-            return cleaned_etag
-        except requests.exceptions.RequestException as e:
-            # print(f"An error occurred: {e}")
-            return None
-
-    def create_multipart_upload(
-        self,
-        request_data: CreateMultipartUploadFormValues,
-    ) -> MultipartUpload:
-        """
-        Creates multipart upload
-        Args:
-            request_data (CreateMultipartUploadFormValues): multipart upload request form
-        Returns:
-            MultipartUpload: multipart upload data
-        """
-        request_data_dict = asdict(request_data)
-        data = self._post(f"/dream/create-multipart-upload", request_data_dict)
-        response = deserialize_api_response(data, MultipartUpload)
-        multipart_upload = response.data
-        return multipart_upload
-
-    def create_dream_file_multipart_upload(
+    def _upload_file_part(
         self,
         uuid: str,
-        request_data: CreateDreamFileMultipartUploadFormValues,
-    ) -> MultipartUpload:
-        """
-        Creates multipart upload for a dream file type (dream, thumbnail or filmstrip file)
-        Args:
-            request_data (CreateMultipartUploadFormValues): multipart upload request form
-        Returns:
-            MultipartUpload: multipart upload data
-        """
-        request_data_dict = asdict(request_data)
-        data = self._post(f"/dream/{uuid}/create-multipart-upload", request_data_dict)
-        response = deserialize_api_response(data, MultipartUpload)
-        multipart_upload = response.data
-        return multipart_upload
-
-    def refresh_multipart_upload_url(
-        self,
-        uuid: str,
-        request_data: RefreshMultipartUploadUrlFormValues,
-    ) -> RefreshMultipartUpload:
-        """
-        Refreshes multipart upload part
-        Args:
-            request_data (RefreshMultipartUploadUrlFormValues): request multipart upload request form
-        Returns:
-            RefreshMultipartUpload: refresh multipart upload url data
-        """
-        request_data_dict = asdict(request_data)
-        data = self._post(
-            f"/dream/{uuid}/refresh-multipart-upload-url", request_data_dict
-        )
-        response = deserialize_api_response(data, RefreshMultipartUpload)
-        multipart_upload = response.data
-        return multipart_upload
-
-    def upload_file_part(
-        self,
-        uuid: str,
-        type: DreamFileType,
+        type: FileType,
         upload_id: str,
         presigned_url: str,
         part_number: int,
         file_part: bytes,
         file_type: Optional[str] = None,
-        frame_number: Optional[int] = None,
-        processed: Optional[bool] = None,
+        options: Optional[UploadFileOptions] = None,
     ) -> Optional[str]:
         """
         Refreshes multipart upload part
         Args:
-            uuid (str): dream uuid
+            uuid (str): resource uuid
             upload_id (str): generated multipart upload id
             presigned_url (str): presigned url to target request
             part_number (int): part number
@@ -192,8 +423,8 @@ class FileClient:
         """
         attempt = 0
         url = presigned_url
-        while attempt < max_retries:
-            result = self.upload_file_request(
+        while attempt < MAX_RETRIES:
+            result = self._upload_file_request(
                 presigned_url=url, file_part=file_part, file_type=file_type
             )
             if result is not None:
@@ -201,104 +432,69 @@ class FileClient:
             else:
                 # new attemp
                 attempt += 1
-                if attempt < max_retries:
+                if attempt < MAX_RETRIES:
                     print(f"Retrying part {attempt + 1}.")
-                    refresh_result = self.refresh_multipart_upload_url(
-                        uuid,
-                        RefreshMultipartUploadUrlFormValues(
-                            type=type,
-                            uploadId=upload_id,
-                            part=part_number,
-                            extension=file_type,
-                            frameNumber=frame_number,
-                            processed=processed,
-                        ),
+                    refresh_upload_endpoint = self._get_refresh_url_endpoint(type, uuid)
+                    refresh_payload = self._build_refresh_payload(
+                        type=type,
+                        uploadId=upload_id,
+                        part=part_number,
+                        extension=file_type,
+                        options=options,
+                    )
+                    refresh_result = self._refresh_multipart_upload(
+                        endpoint=refresh_upload_endpoint, request_data=refresh_payload
                     )
                     new_url = refresh_result.url
                     url = new_url
                 else:
                     raise f"Upload failed. Max retries reached on part {file_part}"
 
-    def complete_multipart_upload(
-        self,
-        uuid: str,
-        request_data: CompleteMultipartUploadFormValues,
-    ) -> DreamResponseWrapper:
-        """
-        Completes multipart upload
-        Args:
-            uuid (str): dream uuid
-            request_data (CompleteMultipartUploadFormValues): complete multipart upload request form
-        Returns:
-            DreamResponseWrapper: dream response after completing upload
-        """
-        request_data_dict = asdict(request_data)
-        data = self._post(f"/dream/{uuid}/complete-multipart-upload", request_data_dict)
-        response = deserialize_api_response(data, DreamResponseWrapper)
-        return response.data
-
     def upload_file(
         self,
         file_path: str,
-        type: DreamFileType,
+        type: FileType,
         options: Optional[UploadFileOptions] = None,
-    ) -> Dream:
+    ) -> Dream | bool | Any:
         """
-        Complete function to upload file to s3 creating a dream on process
+        This function should be made private in future versions.
+        Complete function to upload file to s3 creating a resource on process.
         Args:
             file_path (str): file path
+            type (FileType): type of file to upload
         Returns:
-            Dream: created dream after completing upload
+            Dream | bool | Any: created resource after completing upload
         """
         path = Path(file_path)
-        file_name = path.stem
         file_extension = path.suffix.lstrip(".")
         file_size = path.stat().st_size
         total_parts = calculate_total_parts(file_size)
 
-        # dream name, needed only on DreamFileType.DREAM type, if not DreamFileType.DREAM set None
-        dream_name = (
-            file_name
-            if type == DreamFileType.DREAM
-            and (options is None or not options.processed)
-            else None
+        # Extract options
+        uuid = options.uuid if options else None
+
+        # Create multipart upload
+        create_upload_endpoint = self._get_create_upload_endpoint(type, uuid)
+        create_payload = self._build_create_payload(
+            type=type,
+            parts=total_parts,
+            path=path,
+            options=options,
         )
 
         # create multipart upload
-        multipart_upload: MultipartUpload
+        multipart_upload: MultipartUpload = self._create_multipart_upload(
+            endpoint=create_upload_endpoint, request_data=create_payload
+        )
 
-        # use create_multipart_upload to upload a new video file and create a new dream
-        if type == DreamFileType.DREAM and (options is None or options.uuid is None):
-            multipart_upload = self.create_multipart_upload(
-                CreateMultipartUploadFormValues(
-                    name=dream_name,
-                    extension=file_extension,
-                    nsfw=False,
-                    parts=total_parts,
-                )
-            )
-        # use create_dream_file_multipart_upload to upload a new video file type (dream, thumbnail or filmstrip file) or update processed dream
-        else:
-            multipart_upload = self.create_dream_file_multipart_upload(
-                uuid=options.uuid if options and options.uuid else None,
-                request_data=CreateDreamFileMultipartUploadFormValues(
-                    type=type,
-                    name=dream_name,
-                    extension=file_extension,
-                    parts=total_parts,
-                    frameNumber=(
-                        options.frame_number
-                        if options and options.frame_number is not None
-                        else None
-                    ),
-                    processed=(
-                        options.processed if options and options.processed else None
-                    ),
-                ),
-            )
+        # if type == FileType.DREAM and it doesn't have uuid (created on multipart request for dreams), set uuid
+        if (
+            uuid is None
+            and type == FileType.DREAM
+            and (dream := getattr(multipart_upload, "dream", None))
+        ):
+            uuid = dream.uuid
 
-        dream = multipart_upload.dream
-        dream_uuid = dream.uuid
         upload_id = multipart_upload.uploadId
         urls = multipart_upload.urls
         completed_parts: List[CompletedPart] = []
@@ -310,54 +506,46 @@ class FileClient:
             # iterates urls to upload each part and obtaining each etag
             for index, url in enumerate(urls):
                 part_number = index + 1
-                part_data = file.read(part_size)
+                part_data = file.read(PART_SIZE)
 
                 # exit the loop if read all the data
                 if not part_data:
                     break
 
-                # obtain etag from upload_file_part function call
-                etag = self.upload_file_part(
+                # obtain etag from _upload_file_part function call
+                etag = self._upload_file_part(
                     type=type,
-                    uuid=dream_uuid,
+                    uuid=uuid,
                     upload_id=upload_id,
                     part_number=part_number,
                     presigned_url=url,
                     file_part=part_data,
                     file_type=file_extension,
-                    frame_number=(
-                        options.frame_number
-                        if options and options.frame_number is not None
-                        else None
-                    ),
-                    processed=(
-                        options.processed if options and options.processed else None
-                    ),
+                    options=options,
                 )
                 completed_parts.append(CompletedPart(ETag=etag, PartNumber=part_number))
                 bytes_uploaded += len(part_data)
                 progress_percentage = (bytes_uploaded / file_size) * 100
                 print(f"Upload progress: {progress_percentage:.2f}%")
 
-        # complete upload request
-        completed_upload = self.complete_multipart_upload(
-            dream.uuid,
-            CompleteMultipartUploadFormValues(
-                type=type,
-                uploadId=upload_id,
-                extension=file_extension,
-                name=dream_name,
-                parts=completed_parts,
-                frameNumber=(
-                    options.frame_number
-                    if options and options.frame_number is not None
-                    else None
-                ),
-                processed=(
-                    options.processed if options and options.processed else None
-                ),
-            ),
+        # Build the payload
+        complete_upload_endpoint = self._get_complete_upload_endpoint(type, uuid)
+
+        complete_payload = self._build_complete_payload(
+            upload_id=upload_id,
+            parts=completed_parts,
+            path=path,
+            type=type,
+            options=options,
+        )
+
+        # Complete upload request
+        completed_upload = self._complete_multipart_upload(
+            endpoint=complete_upload_endpoint, request_data=complete_payload
         )
 
         print("Upload completed.")
-        return completed_upload.dream
+        if type in [FileType.DREAM, FileType.FILMSTRIP, FileType.THUMBNAIL]:
+            return completed_upload.dream
+
+        return True

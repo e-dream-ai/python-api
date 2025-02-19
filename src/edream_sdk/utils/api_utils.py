@@ -4,9 +4,7 @@ from typing import TypeVar, Type, Dict, Any, Optional
 from ..models.api_types import ApiResponse
 from ..models.vote_types import VoteType
 from ..models.dream_types import DreamStatusType
-
-T = TypeVar("T", bound=Any)
-
+from ..models.types import T
 
 class StrEnum(str, Enum):
     @classmethod

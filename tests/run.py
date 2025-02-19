@@ -7,7 +7,7 @@ from edream_sdk.models.dream_types import (
 from edream_sdk.models.keyframe_types import (
     UpdateKeyframeRequest,
 )
-from edream_sdk.models.file_upload_types import UploadFileOptions
+from edream_sdk.models.file_upload_types import UploadFileOptions, FileType
 from edream_sdk.client import create_edream_client
 
 
@@ -53,51 +53,40 @@ def run():
     # )
     # edream_client.add_keyframe_to_playlist(
     #     playlist_uuid="14bdc320-2c06-41e4-8a90-639385c491d9",
-    #     keyframe_uuid="17f75282-2bc0-46d7-b6e4-1ecd7a9b4ebc",
+    #     keyframe_uuid="9d62ceec-e120-4c15-9e27-26a829f3c30b",
     # )
     # edream_client.delete_keyframe_from_playlist(
-    #     uuid="14bdc320-2c06-41e4-8a90-639385c491d9", playlist_keyframe_id=15
+    #     uuid="14bdc320-2c06-41e4-8a90-639385c491d9", playlist_keyframe_id=16
     # )
     # edream_client.delete_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
 
     # file
     # edream_client.upload_file(
-    #     file_path="path_to_file",
+    #     file_path="path_to_file/python_video.mp4",
     #     type=DreamFileType.DREAM,
     # )
 
     # thumbnail
     # edream_client.upload_file(
-    #     file_path="./assets/thumbnail.png",
+    #     file_path="path_to_file/thumbnail.png",
     #     type=DreamFileType.THUMBNAIL,
-    #     options=UploadFileOptions(uuid="55353076-f985-4a0c-bd1b-91ee727794fb"),
+    #     options=UploadFileOptions(uuid="8bdcab8b-404d-4651-b24b-42edd21f1b4d"),
     # )
 
     # filmstrip
     # edream_client.upload_file(
-    #     file_path="./assets/frame-701.jpg",
+    #     file_path="path_to_file/frame.png",
     #     type=DreamFileType.FILMSTRIP,
     #     options=UploadFileOptions(
-    #         uuid="55353076-f985-4a0c-bd1b-91ee727794fb", frame_number=701
+    #         uuid="8bdcab8b-404d-4651-b24b-42edd21f1b4d", frame_number=701
     #     ),
     # )
 
-    # thumbnail
-    # edream_client.upload_file(
-    #     file_path="./assets/thumbnail.png",
-    #     type=DreamFileType.THUMBNAIL,
-    #     options=UploadFileOptions(uuid="55353076-f985-4a0c-bd1b-91ee727794fb"),
-    # )
-
     # keyframe
-    # edream_client.upload_file(
-    #     file_path="./assets/thumbnail.png",
-    #     type=DreamFileType.THUMBNAIL,
-    #     options=UploadFileOptions(uuid="55353076-f985-4a0c-bd1b-91ee727794fb"),
-    # )
-
-    # video processed
     # keyframe = edream_client.get_keyframe("7c38cb05-838b-4a7d-94dc-7b713270731e")
+    # edream_client.create_keyframe(
+    #     file_path="path_to_file/keyframe.jpg", name="python sdk keyframe"
+    # )
     # print(keyframe.to_json())
     # edream_client.update_keyframe(
     #     "7c38cb05-838b-4a7d-94dc-7b713270731e",

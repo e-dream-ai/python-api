@@ -17,7 +17,7 @@ class DreamStatusType(Enum):
 
 
 # Enum for DreamFileType
-class DreamFileType(str, Enum):
+class DreamFileType:
     DREAM = "dream"
     THUMBNAIL = "thumbnail"
     FILMSTRIP = "filmstrip"
@@ -32,7 +32,7 @@ class DreamFileType(str, Enum):
 class Dream:
     id: int
     uuid: str
-    user:  Optional[User] = None
+    user: Optional[User] = None
     name: Optional[str] = None
     thumbnail: Optional[str] = None
     activityLevel: Optional[int] = 0
@@ -50,6 +50,10 @@ class Dream:
     filmstrip: Optional[List[str]] = None
     upvotes: Optional[int] = None
     downvotes: Optional[int] = None
+    sourceUrl: Optional[str] = None
+    description: Optional[str] = None
+    ccbyLicense: Optional[bool] = None
+    md5: Optional[str] = None
     startKeyframe: Optional[Keyframe] = None
     endKeyframe: Optional[Keyframe] = None
     processed_at: Optional[str] = None

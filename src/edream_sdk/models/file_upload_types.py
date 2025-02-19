@@ -1,6 +1,19 @@
 from dataclasses import dataclass
+from dataclasses_json import dataclass_json
+from enum import Enum
 from typing import Optional, List
 from .dream_types import Dream, DreamFileType
+
+
+# Enum for FileType
+class FileType(str, Enum):
+    DREAM = "dream"
+    THUMBNAIL = "thumbnail"
+    FILMSTRIP = "filmstrip"
+    KEYFRAME = "keyframe"
+
+    def to_dict(self):
+        return self.value
 
 
 # Data class for CreateMultipartUploadFormValues
@@ -30,19 +43,20 @@ class CreateDreamFileMultipartUploadFormValues:
 @dataclass
 class MultipartUpload:
     urls: List[str]
-    dream: Dream
     uploadId: str
+    dream: Optional[Dream]
 
 
 # Data class for MultipartUploadRequest
 @dataclass
 class MultipartUploadRequest:
     presignedUrl: str
-    dream: Dream
+    dream: Optional[Dream]
     uploadId: str
 
 
 # Data class for CompletedPart
+@dataclass_json
 @dataclass
 class CompletedPart:
     ETag: str
@@ -75,9 +89,11 @@ class CompleteMultipartUploadFormValues:
 # Data class for CompleteMultipartUploadFormValues
 @dataclass
 class UploadFileOptions:
-    frame_number: Optional[int] = None
-    processed: Optional[bool] = None
     uuid: Optional[str] = None
+    processed: Optional[bool] = None
+    frame_number: Optional[int] = None  # Specific to FILMSTRIP
+    name: Optional[str] = None  # Specific to DREAM
+    nsfw: Optional[bool] = None  # Specific to DREAM
 
 
 # Data class for CompleteMultipartUploadFormValues
@@ -86,3 +102,10 @@ class RefreshMultipartUpload:
     url: str
     dream: Dream
     uploadId: str
+
+
+# Data class for CompleteFileResponseWrapper
+@dataclass_json
+@dataclass
+class CompleteFileResponseWrapper:
+    dream: Optional[Dream]

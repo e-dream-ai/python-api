@@ -1,8 +1,7 @@
 from typing import Generic, Optional, TypeVar, Any
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
-
-T = TypeVar("T", bound=Any)
+from .types import T
 
 
 @dataclass_json

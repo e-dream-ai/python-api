@@ -124,6 +124,8 @@ class UpdateDreamRequest:
     activityLevel: Optional[int] = None
     featureRank: Optional[int] = None
     displayedOwner: Optional[int] = None
+    startKeyframe: Optional[str] = None
+    endKeyframe: Optional[str] = None
 
 
 # Data class for SetDreamProcessedRequest

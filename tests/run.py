@@ -84,8 +84,10 @@ def run():
 
     # keyframe
     # keyframe = edream_client.get_keyframe("7c38cb05-838b-4a7d-94dc-7b713270731e")
-    # edream_client.create_keyframe(
-    #     file_path="path_to_file/keyframe.jpg", name="python sdk keyframe"
+    # edream_client.add_keyframe_to_playlist(
+    #     keyframe_name="keyframe",
+    #     playlist_uuid="14bdc320-2c06-41e4-8a90-639385c491d9",
+    #     file_path="path_to_file/keyframe.jpg",
     # )
     # print(keyframe.to_json())
     # edream_client.update_keyframe(

@@ -10,6 +10,7 @@ from ..models.playlist_types import (
     UpdatePlaylistRequest,
 )
 from ..utils.api_utils import deserialize_api_response
+from ..utils.file_utils import verify_file_path
 
 
 class PlaylistClient:
@@ -93,7 +94,7 @@ class PlaylistClient:
         response = deserialize_api_response(data, ApiResponse)
         return response.success
 
-    def add_keyframe_to_playlist(
+    def _add_keyframe_to_playlist(
         self, playlist_uuid: str, keyframe_uuid: str
     ) -> Playlist:
         """
@@ -108,6 +109,27 @@ class PlaylistClient:
         data = self._post(f"/playlist/{playlist_uuid}/keyframe", form)
         response = deserialize_api_response(data, PlaylistResponseWrapper)
         playlist = response.data.playlist
+        return playlist
+
+    def add_keyframe_to_playlist(
+        self, playlist_uuid: str, keyframe_name: str, file_path: Optional[str] = None
+    ) -> Playlist:
+        """
+        Adds keyframe to a playlist
+        Args:
+            playlist_uuid (str): playlist uuid
+            keyframe_name (str): keyframe uuid
+            file_path (str): file path to keyframe
+        Returns:
+            Playlist: An `ApiResponse` object containing a `PlaylistResponseWrapper`
+        """
+        if file_path is not None:
+            verify_file_path(file_path)
+        keyframe = self._create_keyframe(name=keyframe_name, file_path=file_path)
+        playlist = self._add_keyframe_to_playlist(
+            playlist_uuid=playlist_uuid, keyframe_uuid=keyframe.uuid
+        )
+
         return playlist
 
     def delete_keyframe_from_playlist(

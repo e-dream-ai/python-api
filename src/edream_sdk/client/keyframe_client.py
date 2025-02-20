@@ -24,7 +24,7 @@ class KeyframeClient:
         keyframe = response.data.keyframe
         return keyframe
 
-    def _create_keyframe(self, name: str) -> Optional[Keyframe]:
+    def _create_keyframe_request(self, name: str) -> Optional[Keyframe]:
         """
         Creates a keyframe
         Args:
@@ -38,7 +38,9 @@ class KeyframeClient:
         keyframe = response.data.keyframe
         return keyframe
 
-    def create_keyframe(self, name: str, file_path: str) -> Optional[Keyframe]:
+    def _create_keyframe(
+        self, name: str, file_path: Optional[str] = None
+    ) -> Optional[Keyframe]:
         """
         Creates a keyframe
         Args:
@@ -46,7 +48,7 @@ class KeyframeClient:
         Returns:
             Optional[Keyframe]: An `ApiResponse` object containing a `KeyframeResponseWrapper`
         """
-        keyframe = self._create_keyframe(name)
+        keyframe = self._create_keyframe_request(name)
         if file_path:
             self.upload_file(
                 file_path=file_path,

@@ -2,6 +2,7 @@ from typing import Optional
 from dataclasses import asdict
 from ..models.api_types import ApiResponse
 from ..models.dream_types import Dream
+from ..models.keyframe_types import Keyframe
 from ..models.dream_types import DreamFileType
 from ..models.playlist_types import (
     Playlist,
@@ -113,7 +114,7 @@ class PlaylistClient:
 
     def add_keyframe_to_playlist(
         self, playlist_uuid: str, keyframe_name: str, file_path: Optional[str] = None
-    ) -> Playlist:
+    ) -> Keyframe:
         """
         Adds keyframe to a playlist
         Args:
@@ -121,7 +122,7 @@ class PlaylistClient:
             keyframe_name (str): keyframe uuid
             file_path (str): file path to keyframe
         Returns:
-            Playlist: An `ApiResponse` object containing a `PlaylistResponseWrapper`
+            Keyframe: An `ApiResponse` object containing a `KeyframeResponseWrapper`
         """
         if file_path is not None:
             verify_file_path(file_path)
@@ -129,8 +130,7 @@ class PlaylistClient:
         playlist = self._add_keyframe_to_playlist(
             playlist_uuid=playlist_uuid, keyframe_uuid=keyframe.uuid
         )
-
-        return playlist
+        return keyframe
 
     def delete_keyframe_from_playlist(
         self,

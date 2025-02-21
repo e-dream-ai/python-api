@@ -61,6 +61,12 @@ class Playlist:
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
+    @property
+    def keyframes(self) -> Optional[List[Keyframe]]:
+        if not self.playlistKeyframes:
+            return []
+        return [pk.keyframe for pk in self.playlistKeyframes]
+
 
 # Data class for Playlist
 @dataclass_json

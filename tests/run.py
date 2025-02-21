@@ -34,7 +34,10 @@ def run():
 
     # playlist
     # playlist = edream_client.get_playlist("14bdc320-2c06-41e4-8a90-639385c491d9")
-    # print(playlist.to_json())
+    # print keyframes uuids
+    # print(playlist.keyframes)
+    # for k in playlist.keyframes:
+    #     print(k.uuid)
     # edream_client.update_playlist(
     #     "b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4",
     #     request_data=UpdatePlaylistRequest(name="name python"),

@@ -45,6 +45,13 @@ class PlaylistKeyframe:
 # Data class for Playlist
 @dataclass_json
 @dataclass
+class PlaylistKeyframeResponseWrapper:
+    playlistKeyframe: Optional[PlaylistKeyframe]
+
+
+# Data class for Playlist
+@dataclass_json
+@dataclass
 class Playlist:
     id: int
     uuid: str

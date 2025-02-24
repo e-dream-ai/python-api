@@ -8,7 +8,9 @@ from ..models.playlist_types import (
     Playlist,
     PlaylistResponseWrapper,
     PlaylistItemType,
+    PlaylistKeyframe,
     UpdatePlaylistRequest,
+    PlaylistKeyframeResponseWrapper,
 )
 from ..utils.api_utils import deserialize_api_response
 from ..utils.file_utils import verify_file_path
@@ -97,7 +99,7 @@ class PlaylistClient:
 
     def _add_keyframe_to_playlist(
         self, playlist_uuid: str, keyframe_uuid: str
-    ) -> Playlist:
+    ) -> PlaylistKeyframe:
         """
         Adds keyframe to a playlist
         Args:
@@ -108,12 +110,12 @@ class PlaylistClient:
         """
         form = {"uuid": keyframe_uuid}
         data = self._post(f"/playlist/{playlist_uuid}/keyframe", form)
-        response = deserialize_api_response(data, PlaylistResponseWrapper)
-        playlist = response.data.playlist
-        return playlist
+        response = deserialize_api_response(data, PlaylistKeyframeResponseWrapper)
+        playlistKeyframe = response.data.playlistKeyframe
+        return playlistKeyframe
 
     def add_keyframe_to_playlist(
-        self, playlist_uuid: str, keyframe_name: str, file_path: Optional[str] = None
+        self, playlist: Playlist, keyframe_name: str, file_path: Optional[str] = None
     ) -> Keyframe:
         """
         Adds keyframe to a playlist
@@ -126,10 +128,13 @@ class PlaylistClient:
         """
         if file_path is not None:
             verify_file_path(file_path)
-        keyframe = self._create_keyframe(name=keyframe_name, file_path=file_path)
-        playlist = self._add_keyframe_to_playlist(
-            playlist_uuid=playlist_uuid, keyframe_uuid=keyframe.uuid
+        keyframe: Keyframe = self._create_keyframe(
+            name=keyframe_name, file_path=file_path
         )
+        new_playlist_keyframe = self._add_keyframe_to_playlist(
+            playlist_uuid=playlist.uuid, keyframe_uuid=keyframe.uuid
+        )
+        playlist.playlistKeyframes.append(new_playlist_keyframe)
         return keyframe
 
     def delete_keyframe_from_playlist(

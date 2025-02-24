@@ -14,7 +14,7 @@ from edream_sdk.client import create_edream_client
 def run():
     # Initialize ApiClient with backend_url and api_key instance
     edream_client = create_edream_client(
-        backend_url="http://localhost:8080/api/v1", api_key="your_api_key"
+        backend_url="http://localhost:8080/api/v1", api_key="API_KEY"
     )
 
     # user
@@ -86,10 +86,11 @@ def run():
     # )
 
     # keyframe
+    # playlist = edream_client.get_playlist("14bdc320-2c06-41e4-8a90-639385c491d9")
     # keyframe = edream_client.get_keyframe("7c38cb05-838b-4a7d-94dc-7b713270731e")
     # edream_client.add_keyframe_to_playlist(
-    #     keyframe_name="keyframe",
-    #     playlist_uuid="14bdc320-2c06-41e4-8a90-639385c491d9",
+    #     playlist,
+    #     "keyframe from python",
     #     file_path="path_to_file/keyframe.jpg",
     # )
     # print(keyframe.to_json())

@@ -21,16 +21,16 @@ def run():
     # user = edream_client.get_logged_user()
 
     # dream
-    # dream = edream_client.get_dream("033d14e0-82e6-49e0-b6bd-69d99833721e")
-    # print(dream.to_json())
-    # edream_client.get_dream_vote("55353076-f985-4a0c-bd1b-91ee727794fb")
-    # edream_client.update_dream(
-    #     "55353076-f985-4a0c-bd1b-91ee727794fb",
-    #     request_data=UpdateDreamRequest(name="name python"),
-    # )
-    # edream_client.upvote_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
-    # edream_client.downvote_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
-    # edream_client.delete_dream("55353076-f985-4a0c-bd1b-91ee727794fb")
+    dream = edream_client.get_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+    print(dream)
+    print(dream["uuid"])
+    # edream_client.get_dream_vote("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+    edream_client.update_dream(
+        "8bdcab8b-404d-4651-b24b-42edd21f1b4d", {"name": "name from python"}
+    )
+    # edream_client.upvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+    # edream_client.downvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+    # edream_client.delete_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
 
     # playlist
     # playlist = edream_client.get_playlist("14bdc320-2c06-41e4-8a90-639385c491d9")
@@ -93,7 +93,6 @@ def run():
     #     "keyframe from python",
     #     file_path="path_to_file/keyframe.jpg",
     # )
-    # print(keyframe.to_json())
     # edream_client.update_keyframe(
     #     "7c38cb05-838b-4a7d-94dc-7b713270731e",
     #     request_data=UpdateKeyframeRequest(name="python updated kf"),

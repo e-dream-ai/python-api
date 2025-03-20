@@ -1,10 +1,11 @@
 from dacite import from_dict, DaciteError, Config, MissingValueError
 from enum import Enum
-from typing import TypeVar, Type, Dict, Any, Optional
+from typing import Type, Dict, Any, Optional
 from ..models.api_types import ApiResponse
 from ..models.vote_types import VoteType
 from ..models.dream_types import DreamStatusType
 from ..models.types import T
+
 
 class StrEnum(str, Enum):
     @classmethod

@@ -20,12 +20,12 @@ class DreamClient:
         Returns:
             Optional[Dream]: An `ApiResponse` object containing a `DreamResponseWrapper`
         """
-        data = self._get(f"/dream/{uuid}")
-        response = deserialize_api_response(data, DreamResponseWrapper)
-        dream = response.data.dream
+        response: ApiResponse = self._get(f"/dream/{uuid}")
+        data: DreamResponseWrapper = response["data"]
+        dream = data["dream"]
         return dream
 
-    def update_dream(self, uuid: str, request_data: UpdateDreamRequest) -> Dream:
+    def update_dream(self, uuid: str, data: UpdateDreamRequest) -> Dream:
         """
         Updates a dream by its uuid
         Args:
@@ -34,10 +34,9 @@ class DreamClient:
         Returns:
             Dream: An `ApiResponse` object containing a `DreamResponseWrapper`
         """
-        request_data_dict = asdict(request_data)
-        data = self._put(f"/dream/{uuid}", request_data_dict)
-        response = deserialize_api_response(data, DreamResponseWrapper)
-        dream = response.data.dream
+        response: ApiResponse = self._put(f"/dream/{uuid}", data)
+        data: DreamResponseWrapper = response["data"]
+        dream = data["dream"]
         return dream
 
     def get_dream_vote(

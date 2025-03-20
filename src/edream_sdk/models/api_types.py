@@ -1,12 +1,10 @@
-from typing import Generic, Optional, TypeVar, Any
+from typing import Optional, TypedDict
 from dataclasses import dataclass
-from dataclasses_json import dataclass_json
 from .types import T
 
 
-@dataclass_json
 @dataclass
-class ApiResponse(Generic[T]):
+class ApiResponse(TypedDict):
     success: Optional[bool] = None
     message: Optional[str] = None
     data: Optional[T] = None

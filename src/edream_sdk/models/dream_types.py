@@ -1,7 +1,6 @@
 from enum import Enum
-from typing import List, Optional, Dict, ByteString
+from typing import List, Optional, Dict, ByteString, TypedDict
 from dataclasses import dataclass
-from dataclasses_json import dataclass_json
 from .user_types import User
 from .vote_types import Vote
 from .keyframe_types import Keyframe
@@ -27,9 +26,8 @@ class DreamFileType:
 
 
 # Data class for Dream
-@dataclass_json
 @dataclass
-class Dream:
+class Dream(TypedDict):
     id: int
     uuid: str
     user: Optional[User] = None
@@ -103,9 +101,8 @@ class MultipartUploadRequest:
 
 
 # Data class for DreamResponseWrapper
-@dataclass_json
 @dataclass
-class DreamResponseWrapper:
+class DreamResponseWrapper(TypedDict):
     dream: Optional[Dream]
 
 
@@ -117,7 +114,7 @@ class DreamVoteResponseWrapper:
 
 # Data class for UpdateDreamRequest
 @dataclass
-class UpdateDreamRequest:
+class UpdateDreamRequest(TypedDict):
     name: Optional[str] = None
     video: Optional[str] = None
     thumbnail: Optional[str] = None

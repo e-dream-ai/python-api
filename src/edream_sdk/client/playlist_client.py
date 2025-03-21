@@ -8,10 +8,12 @@ from ..types.keyframe_types import Keyframe
 from ..types.dream_types import DreamFileType
 from ..types.playlist_types import (
     Playlist,
-    PlaylistResponseWrapper,
+    PlaylistItem,
     PlaylistItemType,
     PlaylistKeyframe,
     UpdatePlaylistRequest,
+    PlaylistResponseWrapper,
+    PlaylistItemResponseWrapper,
     PlaylistKeyframeResponseWrapper,
 )
 from ..utils.file_utils import verify_file_path
@@ -51,7 +53,7 @@ class PlaylistClient:
 
     def add_item_to_playlist(
         self, playlist_uuid: str, type: PlaylistItemType, item_uuid: str
-    ) -> Playlist:
+    ) -> PlaylistItem:
         """
         Adds item to a playlist
         Args:
@@ -66,9 +68,9 @@ class PlaylistClient:
 
         form = {"type": type.value, "uuid": item_uuid}
         response = self.api_client.put(f"/playlist/{playlist_uuid}/add-item", form)
-        response_data: PlaylistResponseWrapper = response["data"]
-        playlist = response_data["playlist"]
-        return playlist
+        response_data: PlaylistItemResponseWrapper = response["data"]
+        playlistItem = response_data["playlistItem"]
+        return playlistItem
 
     def add_file_to_playlist(self, uuid: str, file_path: str) -> Optional[Dream]:
         """
@@ -81,7 +83,7 @@ class PlaylistClient:
         """
         dream = self.file_client.upload_file(file_path, type=DreamFileType.DREAM)
         self.add_item_to_playlist(
-            playlist_uuid=uuid, type=PlaylistItemType.DREAM, item_uuid=dream.uuid
+            playlist_uuid=uuid, type=PlaylistItemType.DREAM, item_uuid=dream["uuid"]
         )
         return dream
 
@@ -138,9 +140,10 @@ class PlaylistClient:
             name=keyframe_name, file_path=file_path
         )
         new_playlist_keyframe = self._add_keyframe_to_playlist(
-            playlist_uuid=playlist.uuid, keyframe_uuid=keyframe.uuid
+            playlist_uuid=playlist["uuid"], keyframe_uuid=keyframe["uuid"]
         )
-        playlist.playlistKeyframes.append(new_playlist_keyframe)
+        playlist["playlistKeyframes"].append(new_playlist_keyframe)
+        playlist["keyframes"].append(keyframe)
         return keyframe
 
     def delete_keyframe_from_playlist(

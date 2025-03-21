@@ -71,7 +71,7 @@ class Playlist(TypedDict):
         return [pk.keyframe for pk in self.playlistKeyframes]
 
 
-# Data class for Playlist
+# Data class for Playlist response
 @dataclass
 class PlaylistResponseWrapper(TypedDict):
     playlist: Optional[Playlist]
@@ -84,3 +84,9 @@ class UpdatePlaylistRequest(TypedDict):
     featureRank: Optional[int] = None
     displayedOwner: Optional[int] = None
     nsfw: Optional[bool] = None
+
+
+# Data class for PlaylistItem response
+@dataclass
+class PlaylistItemResponseWrapper(TypedDict):
+    playlistItem: Optional[PlaylistItem]

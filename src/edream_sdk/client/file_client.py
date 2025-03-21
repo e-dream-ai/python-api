@@ -461,7 +461,7 @@ class FileClient:
                     refresh_result = self._refresh_multipart_upload(
                         endpoint=refresh_upload_endpoint, request_data=refresh_payload
                     )
-                    new_url = refresh_result.url
+                    new_url = refresh_result["url"]
                     url = new_url
                 else:
                     raise f"Upload failed. Max retries reached on part {file_part}"
@@ -496,7 +496,7 @@ class FileClient:
         total_parts = calculate_total_parts(file_size)
 
         # Extract options
-        uuid = options.uuid if options else None
+        uuid = options["uuid"] if options else None
 
         # Create multipart upload
         create_upload_endpoint = self._get_create_upload_endpoint(type, uuid)

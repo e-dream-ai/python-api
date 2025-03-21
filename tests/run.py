@@ -65,10 +65,10 @@ def run():
     # edream_client.delete_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
 
     # file
-    edream_client.upload_file(
-        file_path="assets/my_sdk_testing_dream.mp4",
-        type=DreamFileType.DREAM,
-    )
+    # edream_client.upload_file(
+    #     file_path="path_to_file/dream.mp4",
+    #     type=DreamFileType.DREAM,
+    # )
 
     # thumbnail
     # edream_client.upload_file(
@@ -81,7 +81,7 @@ def run():
     # edream_client.upload_file(
     #     file_path="path_to_file/frame.png",
     #     type=DreamFileType.FILMSTRIP,
-    #     options={"uuid": "8bdcab8b-404d-4651-b24b-42edd21f1b4d"},
+    #     options={"uuid": "8bdcab8b-404d-4651-b24b-42edd21f1b4d", "frame_number": 701},
     # )
 
     # keyframe

@@ -57,7 +57,7 @@ class KeyframeClient:
             self.file_client.upload_file(
                 file_path=file_path,
                 type=FileType.KEYFRAME,
-                options={"uuid": keyframe.uuid},
+                options={"uuid": keyframe["uuid"]},
             )
 
         return keyframe
@@ -74,7 +74,7 @@ class KeyframeClient:
         response = self.api_client.put(f"/keyframe/{uuid}", data)
         response_data: KeyframeResponseWrapper = response["data"]
         keyframe = response_data["keyframe"]
-        return
+        return keyframe
 
     def delete_keyframe(self, uuid: str) -> Optional[ApiResponse]:
         """

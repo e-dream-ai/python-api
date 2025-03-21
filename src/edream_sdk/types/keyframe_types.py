@@ -1,13 +1,11 @@
-from typing import Optional
+from typing import Optional, TypedDict
 from dataclasses import dataclass
-from dataclasses_json import dataclass_json
 from .user_types import User
 
 
 # Data class for Keyframe
-@dataclass_json
 @dataclass
-class Keyframe:
+class Keyframe(TypedDict):
     uuid: str
     id: Optional[int] = None
     user: Optional[User] = None
@@ -19,15 +17,13 @@ class Keyframe:
 
 
 # Data class for KeyframeResponseWrapper
-@dataclass_json
 @dataclass
-class KeyframeResponseWrapper:
+class KeyframeResponseWrapper(TypedDict):
     keyframe: Optional[Keyframe]
 
 
 # Data class for UpdateKeyframeRequest
-@dataclass_json
 @dataclass
-class UpdateKeyframeRequest:
+class UpdateKeyframeRequest(TypedDict):
     name: Optional[str] = None
     displayedOwner: Optional[int] = None

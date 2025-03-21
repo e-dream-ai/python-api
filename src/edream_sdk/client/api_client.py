@@ -1,5 +1,6 @@
 import requests
 from typing import Optional, Any, Dict
+from ..types.api_types import ApiResponse
 
 EDREAM_USER_AGENT = "EdreamSDK"
 
@@ -9,9 +10,7 @@ class ApiClient:
     A client for making HTTP requests to a backend API
     """
 
-    def __init__(
-        self, backend_url: Optional[str] = None, api_key: Optional[str] = None
-    ):
+    def __init__(self, backend_url: str, api_key: str):
         if backend_url is None or api_key is None:
             raise ValueError(
                 "backend_url and api_key must be provided for the first initialization"
@@ -35,7 +34,7 @@ class ApiClient:
         endpoint: str,
         params: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
-    ) -> Any:
+    ) -> ApiResponse:
         try:
             url = f"{self.backend_url}{endpoint}"
             filtered_data = {k: v for k, v in (data or {}).items() if v is not None}
@@ -43,7 +42,7 @@ class ApiClient:
                 method, url, params=params, json=filtered_data
             )
             response.raise_for_status()
-            return response.json()
+            return ApiResponse(response.json())
 
         except requests.exceptions.HTTPError as http_err:
             # Handle HTTP errors (e.g., 4xx, 5xx status codes)
@@ -65,14 +64,18 @@ class ApiClient:
             print(f"Value error occurred: {val_err}")
             raise
 
-    def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Any:
-        return self._request("GET", endpoint, params=params)
+    def get(
+        self, endpoint: str, params: Optional[Dict[str, Any]] = None
+    ) -> ApiResponse:
+        return ApiResponse(self._request("GET", endpoint, params=params))
 
-    def _post(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
+    def post(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> ApiResponse:
         return self._request("POST", endpoint, data=data)
 
-    def _put(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
+    def put(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> ApiResponse:
         return self._request("PUT", endpoint, data=data)
 
-    def _delete(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
+    def delete(
+        self, endpoint: str, data: Optional[Dict[str, Any]] = None
+    ) -> ApiResponse:
         return self._request("DELETE", endpoint, data=data)

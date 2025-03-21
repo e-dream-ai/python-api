@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, TypedDict
 from dataclasses import dataclass
 from enum import Enum
 
@@ -24,14 +24,14 @@ class Token:
 
 # Data class for Role
 @dataclass
-class Role:
+class Role(TypedDict):
     id: int
     name: RoleType
 
 
 # Data class for User
 @dataclass
-class User:
+class User(TypedDict):
     id: int
     uuid: str
     email: Optional[str] = None
@@ -50,12 +50,6 @@ class User:
     last_login_at: Optional[str] = None
 
 
-# Data class for UserWithToken
 @dataclass
-class UserWithToken(User):
-    token: Optional[Token] = None
-
-
-@dataclass
-class UserResponseWrapper:
+class UserResponseWrapper(TypedDict):
     user: Optional[User]

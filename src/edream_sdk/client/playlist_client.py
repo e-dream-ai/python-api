@@ -1,10 +1,12 @@
 from typing import Optional
 from dataclasses import asdict
-from ..models.api_types import ApiResponse
-from ..models.dream_types import Dream
-from ..models.keyframe_types import Keyframe
-from ..models.dream_types import DreamFileType
-from ..models.playlist_types import (
+from ..client.api_client import ApiClient
+from ..client.file_client import FileClient
+from ..utils.playlist_utils import format_playlist
+from ..types.dream_types import Dream
+from ..types.keyframe_types import Keyframe
+from ..types.dream_types import DreamFileType
+from ..types.playlist_types import (
     Playlist,
     PlaylistResponseWrapper,
     PlaylistItemType,
@@ -12,39 +14,39 @@ from ..models.playlist_types import (
     UpdatePlaylistRequest,
     PlaylistKeyframeResponseWrapper,
 )
-from ..utils.api_utils import deserialize_api_response
 from ..utils.file_utils import verify_file_path
 
 
 class PlaylistClient:
+    def __init__(self, api_client: ApiClient, file_client: FileClient):
+        self.api_client = api_client
+        self.file_client = file_client
+
     def get_playlist(self, uuid: str) -> Playlist:
         """
         Retrieves a playlist by its uuid
         Args:
             uuid (str): playlist uuid
         Returns:
-            Playlist: An `ApiResponse` object containing a `PlaylistResponseWrapper`
+            Playlist: Found Playlist
         """
-        data = self._get(f"/playlist/{uuid}")
-        response = deserialize_api_response(data, PlaylistResponseWrapper)
-        playlist = response.data.playlist
+        response = self.api_client.get(f"/playlist/{uuid}")
+        data: PlaylistResponseWrapper = response["data"]
+        playlist = format_playlist(data["playlist"])
         return playlist
 
-    def update_playlist(
-        self, uuid: str, request_data: UpdatePlaylistRequest
-    ) -> Playlist:
+    def update_playlist(self, uuid: str, data: UpdatePlaylistRequest) -> Playlist:
         """
         Updates a playlist by its uuid
         Args:
             uuid (str): playlist uuid
             request_data (UpdatePlaylistRequest): playlist data
         Returns:
-            Playlist: An `ApiResponse` object containing a `PlaylistResponseWrapper`
+            Playlist: Found Playlist
         """
-        request_data_dict = asdict(request_data)
-        data = self._put(f"/playlist/{uuid}", request_data_dict)
-        response = deserialize_api_response(data, PlaylistResponseWrapper)
-        playlist = response.data.playlist
+        response = self.api_client.put(f"/playlist/{uuid}", data)
+        response_data: PlaylistResponseWrapper = response["data"]
+        playlist = response_data["playlist"]
         return playlist
 
     def add_item_to_playlist(
@@ -57,12 +59,15 @@ class PlaylistClient:
             type (PlaylistItemType): item type
             item_uuid (int): item uuid
         Returns:
-            Playlist: An `ApiResponse` object containing a `PlaylistResponseWrapper`
+            Playlist: Found Playlist
         """
+        if type not in [PlaylistItemType.DREAM, PlaylistItemType.PLAYLIST]:
+            raise Exception(f"Type not allowed, use 'dream' or 'playlist'")
+
         form = {"type": type.value, "uuid": item_uuid}
-        data = self._put(f"/playlist/{playlist_uuid}/add-item", form)
-        response = deserialize_api_response(data, PlaylistResponseWrapper)
-        playlist = response.data.playlist
+        response = self.api_client.put(f"/playlist/{playlist_uuid}/add-item", form)
+        response_data: PlaylistResponseWrapper = response["data"]
+        playlist = response_data["playlist"]
         return playlist
 
     def add_file_to_playlist(self, uuid: str, file_path: str) -> Optional[Dream]:
@@ -74,7 +79,7 @@ class PlaylistClient:
         Returns:
             Optional[Dream]: Created Dream
         """
-        dream = self.upload_file(file_path, type=DreamFileType.DREAM)
+        dream = self.file_client.upload_file(file_path, type=DreamFileType.DREAM)
         self.add_item_to_playlist(
             playlist_uuid=uuid, type=PlaylistItemType.DREAM, item_uuid=dream.uuid
         )
@@ -84,18 +89,19 @@ class PlaylistClient:
         self,
         uuid: str,
         playlist_item_id: int,
-    ) -> Optional[ApiResponse]:
+    ) -> Optional[bool]:
         """
         Deletes item from a playlist
         Args:
             uuid (str): playlist uuid
             playlist_item_id (int): playlist item id
         Returns:
-            Optional[ApiResponse]: An `ApiResponse` object
+            Optional[bool]: Boolean value that notifies if item was deleted
         """
-        data = self._delete(f"/playlist/{uuid}/remove-item/{playlist_item_id}")
-        response = deserialize_api_response(data, ApiResponse)
-        return response.success
+        response = self.api_client.delete(
+            f"/playlist/{uuid}/remove-item/{playlist_item_id}"
+        )
+        return response["success"]
 
     def _add_keyframe_to_playlist(
         self, playlist_uuid: str, keyframe_uuid: str
@@ -106,25 +112,25 @@ class PlaylistClient:
             playlist_uuid (str): playlist uuid
             keyframe_uuid (int): keyframe uuid
         Returns:
-            Playlist: An `ApiResponse` object containing a `PlaylistResponseWrapper`
+            Playlist: Found Playlist
         """
         form = {"uuid": keyframe_uuid}
-        data = self._post(f"/playlist/{playlist_uuid}/keyframe", form)
-        response = deserialize_api_response(data, PlaylistKeyframeResponseWrapper)
-        playlistKeyframe = response.data.playlistKeyframe
+        response = self.api_client.post(f"/playlist/{playlist_uuid}/keyframe", form)
+        data: PlaylistKeyframeResponseWrapper = response["data"]
+        playlistKeyframe = data["playlistKeyframe"]
         return playlistKeyframe
 
     def add_keyframe_to_playlist(
         self, playlist: Playlist, keyframe_name: str, file_path: Optional[str] = None
     ) -> Keyframe:
         """
-        Adds keyframe to a playlist
+        Adds Keyframe to a Playlist
         Args:
             playlist_uuid (str): playlist uuid
             keyframe_name (str): keyframe uuid
             file_path (str): file path to keyframe
         Returns:
-            Keyframe: An `ApiResponse` object containing a `KeyframeResponseWrapper`
+            Keyframe: Added Keyframe
         """
         if file_path is not None:
             verify_file_path(file_path)
@@ -141,27 +147,27 @@ class PlaylistClient:
         self,
         uuid: str,
         playlist_keyframe_id: int,
-    ) -> Optional[ApiResponse]:
+    ) -> Optional[bool]:
         """
         Deletes keyframe from a playlist
         Args:
             uuid (str): playlist uuid
             playlist_keyframe_id (int): playlist keyframe id
         Returns:
-            Optional[ApiResponse]: An `ApiResponse` object
+            Optional[bool]: Boolean value that notifies if keyframe was deleted from playlist
         """
-        data = self._delete(f"/playlist/{uuid}/keyframe/{playlist_keyframe_id}")
-        response = deserialize_api_response(data, ApiResponse)
-        return response.success
+        response = self.api_client.delete(
+            f"/playlist/{uuid}/keyframe/{playlist_keyframe_id}"
+        )
+        return response["success"]
 
-    def delete_playlist(self, uuid: str) -> Optional[ApiResponse]:
+    def delete_playlist(self, uuid: str) -> Optional[bool]:
         """
         Deletes a playlist
         Args:
             uuid (str): playlist uuid
         Returns:
-            Optional[ApiResponse]: An `ApiResponse` object
+            Optional[bool]: Boolean value that notifies if keyframe was deleted
         """
-        data = self._delete(f"/playlist/{uuid}")
-        response = deserialize_api_response(data, ApiResponse)
-        return response.success
+        response = self.api_client.delete(f"/playlist/{uuid}")
+        return response["success"]

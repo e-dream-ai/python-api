@@ -1,13 +1,13 @@
 import json
-from edream_sdk.models.playlist_types import PlaylistItemType, UpdatePlaylistRequest
-from edream_sdk.models.dream_types import (
+from edream_sdk.types.playlist_types import PlaylistItemType, UpdatePlaylistRequest
+from edream_sdk.types.dream_types import (
     UpdateDreamRequest,
     DreamFileType,
 )
-from edream_sdk.models.keyframe_types import (
+from edream_sdk.types.keyframe_types import (
     UpdateKeyframeRequest,
 )
-from edream_sdk.models.file_upload_types import UploadFileOptions, FileType
+from edream_sdk.types.file_upload_types import UploadFileOptions, FileType
 from edream_sdk.client import create_edream_client
 
 
@@ -19,28 +19,29 @@ def run():
 
     # user
     # user = edream_client.get_logged_user()
+    # print(user["name"])
 
     # dream
-    dream = edream_client.get_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
-    print(dream)
-    print(dream["uuid"])
+    # dream = edream_client.get_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+    # print(dream)
+    # print(dream["uuid"])
     # edream_client.get_dream_vote("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
-    edream_client.update_dream(
-        "8bdcab8b-404d-4651-b24b-42edd21f1b4d", {"name": "name from python"}
-    )
-    # edream_client.upvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+    # edream_client.update_dream(
+    #     "8bdcab8b-404d-4651-b24b-42edd21f1b4d", {"name": "name from python"}
+    # )
+
     # edream_client.downvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+    # edream_client.upvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
     # edream_client.delete_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
 
     # playlist
     # playlist = edream_client.get_playlist("14bdc320-2c06-41e4-8a90-639385c491d9")
     # print keyframes uuids
-    # print(playlist.keyframes)
-    # for k in playlist.keyframes:
-    #     print(k.uuid)
+    # print(playlist["keyframes"])
+    # for k in playlist["keyframes"]:
+    #     print(k["uuid"])
     # edream_client.update_playlist(
-    #     "b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4",
-    #     request_data=UpdatePlaylistRequest(name="name python"),
+    #     "39bcfc87-d13c-4106-897f-ae490d46b0d1", {"name": "playlist updated from python"}
     # )
     # edream_client.add_item_to_playlist(
     #     playlist_uuid="b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4",
@@ -64,25 +65,23 @@ def run():
     # edream_client.delete_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
 
     # file
-    # edream_client.upload_file(
-    #     file_path="path_to_file/python_video.mp4",
-    #     type=DreamFileType.DREAM,
-    # )
+    edream_client.upload_file(
+        file_path="assets/my_sdk_testing_dream.mp4",
+        type=DreamFileType.DREAM,
+    )
 
     # thumbnail
     # edream_client.upload_file(
     #     file_path="path_to_file/thumbnail.png",
     #     type=DreamFileType.THUMBNAIL,
-    #     options=UploadFileOptions(uuid="8bdcab8b-404d-4651-b24b-42edd21f1b4d"),
+    #     options={"uuid": "8bdcab8b-404d-4651-b24b-42edd21f1b4d"},
     # )
 
     # filmstrip
     # edream_client.upload_file(
     #     file_path="path_to_file/frame.png",
     #     type=DreamFileType.FILMSTRIP,
-    #     options=UploadFileOptions(
-    #         uuid="8bdcab8b-404d-4651-b24b-42edd21f1b4d", frame_number=701
-    #     ),
+    #     options={"uuid": "8bdcab8b-404d-4651-b24b-42edd21f1b4d"},
     # )
 
     # keyframe
@@ -95,7 +94,7 @@ def run():
     # )
     # edream_client.update_keyframe(
     #     "7c38cb05-838b-4a7d-94dc-7b713270731e",
-    #     request_data=UpdateKeyframeRequest(name="python updated kf"),
+    #     {"name": "python updated kf"},
     # )
     # edream_client.delete_keyframe(
     #     "7c38cb05-838b-4a7d-94dc-7b713270731e",

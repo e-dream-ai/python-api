@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from dataclasses_json import dataclass_json
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, TypedDict
 from .dream_types import Dream, DreamFileType
 
 
@@ -18,7 +17,7 @@ class FileType(str, Enum):
 
 # Data class for CreateMultipartUploadFormValues
 @dataclass
-class CreateMultipartUploadFormValues:
+class CreateMultipartUploadFormValues(TypedDict):
     uuid: Optional[str] = None
     name: Optional[str] = None
     extension: Optional[str] = None
@@ -30,7 +29,7 @@ class CreateMultipartUploadFormValues:
 
 # Data class for CreateDreamFileMultipartUploadFormValues
 @dataclass
-class CreateDreamFileMultipartUploadFormValues:
+class CreateDreamFileMultipartUploadFormValues(TypedDict):
     type: DreamFileType
     name: Optional[str] = None
     extension: Optional[str] = None
@@ -41,7 +40,7 @@ class CreateDreamFileMultipartUploadFormValues:
 
 # Data class for MultipartUpload
 @dataclass
-class MultipartUpload:
+class MultipartUpload(TypedDict):
     urls: List[str]
     uploadId: str
     dream: Optional[Dream]
@@ -49,23 +48,22 @@ class MultipartUpload:
 
 # Data class for MultipartUploadRequest
 @dataclass
-class MultipartUploadRequest:
+class MultipartUploadRequest(TypedDict):
     presignedUrl: str
     dream: Optional[Dream]
     uploadId: str
 
 
 # Data class for CompletedPart
-@dataclass_json
 @dataclass
-class CompletedPart:
+class CompletedPart(TypedDict):
     ETag: str
     PartNumber: int
 
 
 # Data class for RefreshMultipartUploadUrlFormValues
 @dataclass
-class RefreshMultipartUploadUrlFormValues:
+class RefreshMultipartUploadUrlFormValues(TypedDict):
     type: DreamFileType
     uploadId: str
     extension: str
@@ -76,7 +74,7 @@ class RefreshMultipartUploadUrlFormValues:
 
 # Data class for CompleteMultipartUploadFormValues
 @dataclass
-class CompleteMultipartUploadFormValues:
+class CompleteMultipartUploadFormValues(TypedDict):
     type: DreamFileType
     uploadId: str
     name: Optional[str] = None
@@ -88,7 +86,7 @@ class CompleteMultipartUploadFormValues:
 
 # Data class for CompleteMultipartUploadFormValues
 @dataclass
-class UploadFileOptions:
+class UploadFileOptions(TypedDict):
     uuid: Optional[str] = None
     processed: Optional[bool] = None
     frame_number: Optional[int] = None  # Specific to FILMSTRIP
@@ -98,14 +96,13 @@ class UploadFileOptions:
 
 # Data class for CompleteMultipartUploadFormValues
 @dataclass
-class RefreshMultipartUpload:
+class RefreshMultipartUpload(TypedDict):
     url: str
     dream: Dream
     uploadId: str
 
 
 # Data class for CompleteFileResponseWrapper
-@dataclass_json
 @dataclass
-class CompleteFileResponseWrapper:
+class CompleteFileResponseWrapper(TypedDict):
     dream: Optional[Dream]

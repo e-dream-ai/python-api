@@ -1,17 +1,20 @@
 from typing import Optional
-from ..models.api_types import ApiResponse
-from ..models.user_types import UserResponseWrapper
-from ..utils.api_utils import deserialize_api_response
+from ..client.api_client import ApiClient
+from ..types.user_types import UserResponseWrapper, User
 
 
 class UserClient:
-    def get_logged_user(self) -> Optional[ApiResponse[UserResponseWrapper]]:
+
+    def __init__(self, api_client: ApiClient):
+        self.api_client = api_client
+
+    def get_logged_user(self) -> Optional[User]:
         """
         Retrieves the logged user
         Returns:
-            Optional[ApiResponse[UserResponseWrapper]]: An `ApiResponse` object containing a `UserResponseWrapper`
+            Optional[user]: Logged `User`
         """
-        data = self._get(f"/auth/user")
-        response = deserialize_api_response(data, UserResponseWrapper)
-        user = response.data.user
+        response = self.api_client.get(f"/auth/user")
+        data: UserResponseWrapper = response["data"]
+        user = data["user"]
         return user

@@ -1,7 +1,6 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, TypedDict
 from dataclasses import dataclass
-from dataclasses_json import dataclass_json
 from .user_types import User
 from .dream_types import Dream
 from .keyframe_types import Keyframe
@@ -15,9 +14,8 @@ class PlaylistItemType(Enum):
 
 
 # Data class for PlaylistItem
-@dataclass_json
 @dataclass
-class PlaylistItem:
+class PlaylistItem(TypedDict):
     id: int
     type: str
     order: int
@@ -30,9 +28,8 @@ class PlaylistItem:
 
 
 # Data class for PlaylistKeyframe
-@dataclass_json
 @dataclass
-class PlaylistKeyframe:
+class PlaylistKeyframe(TypedDict):
     id: int
     order: Optional[int] = None
     keyframe: Optional[Keyframe] = None
@@ -43,16 +40,14 @@ class PlaylistKeyframe:
 
 
 # Data class for Playlist
-@dataclass_json
 @dataclass
-class PlaylistKeyframeResponseWrapper:
+class PlaylistKeyframeResponseWrapper(TypedDict):
     playlistKeyframe: Optional[PlaylistKeyframe]
 
 
 # Data class for Playlist
-@dataclass_json
 @dataclass
-class Playlist:
+class Playlist(TypedDict):
     id: int
     uuid: str
     name: str
@@ -62,6 +57,7 @@ class Playlist:
     displayedOwner: Optional[User] = None
     items: Optional[List[PlaylistItem]] = None
     playlistKeyframes: Optional[List[PlaylistKeyframe]] = None
+    keyframes: Optional[List[Keyframe]] = None
     itemCount: Optional[int] = 0
     featureRank: Optional[int] = 0
     nsfw: Optional[bool] = None
@@ -76,16 +72,14 @@ class Playlist:
 
 
 # Data class for Playlist
-@dataclass_json
 @dataclass
-class PlaylistResponseWrapper:
+class PlaylistResponseWrapper(TypedDict):
     playlist: Optional[Playlist]
 
 
 # Data class for UpdatePlaylistRequest
-@dataclass_json
 @dataclass
-class UpdatePlaylistRequest:
+class UpdatePlaylistRequest(TypedDict):
     name: Optional[str] = None
     featureRank: Optional[int] = None
     displayedOwner: Optional[int] = None

@@ -1,10 +1,11 @@
 import os
 import requests
 import math
-from typing import Optional, List, Dict, Any, Type, Union
+from ..client.api_client import ApiClient
+from typing import Optional, List, Dict, Any, Union
 from dataclasses import asdict, is_dataclass
 from pathlib import Path
-from ..models.file_upload_types import (
+from ..types.file_upload_types import (
     FileType,
     CreateMultipartUploadFormValues,
     MultipartUpload,
@@ -14,11 +15,9 @@ from ..models.file_upload_types import (
     RefreshMultipartUploadUrlFormValues,
     UploadFileOptions,
     CompleteFileResponseWrapper,
-    CreateDreamFileMultipartUploadFormValues,
 )
-from ..models.dream_types import Dream
-from ..models.types import T
-from ..utils.api_utils import deserialize_api_response
+from ..types.dream_types import Dream
+from ..types.types import T
 
 # FILE PART SIZE
 PART_SIZE = 1024 * 1024 * 200  # 200 MB
@@ -40,6 +39,8 @@ def calculate_total_parts(file_size: int) -> int:
 
 
 class FileClient:
+    def __init__(self, api_client: ApiClient):
+        self.api_client = api_client
 
     def _get_create_upload_endpoint(
         self, type: FileType, uuid: Optional[str] = None
@@ -101,7 +102,7 @@ class FileClient:
         path: Path,
         parts: Optional[int] = None,
         options: Optional[UploadFileOptions] = None,
-    ) -> Dict[str, Any]:
+    ) -> CreateMultipartUploadFormValues:
         """
         Builds the payload for the upload request based on the file type and options.
         Args:
@@ -112,11 +113,10 @@ class FileClient:
         """
         # Extract common options
         file_extension = path.suffix.lstrip(".")
-
-        payload = {
-            "uuid": getattr(options, "uuid", None),
+        payload: CreateMultipartUploadFormValues = {
             "parts": parts,
             "extension": file_extension,
+            **({"uuid": options.get("uuid")} if options is not None else {}),
         }
 
         # Add type-specific fields to payload
@@ -128,9 +128,14 @@ class FileClient:
             payload.update(
                 {
                     "name": dream_name,
-                    "nsfw": getattr(options, "nsfw", None),
-                    "processed": getattr(options, "processed", None),
                     "type": type,
+                    **(
+                        {
+                            k: v
+                            for k, v in (options or {}).items()
+                            if k in ["nsfw", "processed"]
+                        }
+                    ),
                 }
             )
         elif type == FileType.THUMBNAIL:
@@ -143,8 +148,12 @@ class FileClient:
         elif type == FileType.FILMSTRIP:
             payload.update(
                 {
-                    "frameNumber": getattr(options, "frame_number", None),
                     "type": type,
+                    **(
+                        {"frameNumber": options.get("frame_number")}
+                        if options is not None
+                        else {}
+                    ),
                 }
             )
         elif type == FileType.KEYFRAME:
@@ -159,7 +168,7 @@ class FileClient:
         part_number: int,
         file_extension: str,
         options: UploadFileOptions,
-    ) -> Dict[str, Any]:
+    ) -> RefreshMultipartUploadUrlFormValues:
         """
         Builds the payload for the refresh multipart upload URL request.
         Args:
@@ -172,7 +181,7 @@ class FileClient:
             Dict[str, Any]: The payload for the refresh multipart upload URL request.
         """
         # Base payload
-        payload = {
+        payload: RefreshMultipartUploadUrlFormValues = {
             "type": type,
             "uploadId": upload_id,
             "part": part_number,
@@ -183,13 +192,21 @@ class FileClient:
         if type == FileType.DREAM:
             payload.update(
                 {
-                    "processed": getattr(options, "processed", None),
+                    **(
+                        {"processed": options.get("processed")}
+                        if options is not None
+                        else {}
+                    ),
                 }
             )
         elif type == FileType.FILMSTRIP:
             payload.update(
                 {
-                    "frameNumber": getattr(options, "frame_umber", None),
+                    **(
+                        {"frameNumber": options.get("frame_number")}
+                        if options is not None
+                        else {}
+                    ),
                 }
             )
 
@@ -202,7 +219,7 @@ class FileClient:
         upload_id: str,
         parts: List[CompletedPart],
         options: Optional[UploadFileOptions] = None,
-    ) -> Dict[str, Any]:
+    ) -> CompleteMultipartUploadFormValues:
         """
         Builds the payload for the complete multipart upload request.
         Args:
@@ -217,9 +234,9 @@ class FileClient:
         # Extract common options
         file_extension = path.suffix.lstrip(".")
 
-        payload = {
+        payload: CompleteMultipartUploadFormValues = {
             "uploadId": upload_id,
-            "parts": [part.to_dict() for part in parts],
+            "parts": parts,
             "extension": file_extension,
             "type": type,
         }
@@ -232,14 +249,23 @@ class FileClient:
             payload.update(
                 {
                     "name": dream_name,
-                    "nsfw": getattr(options, "nsfw", None),
-                    "processed": getattr(options, "processed", None),
+                    **(
+                        {
+                            k: v
+                            for k, v in (options or {}).items()
+                            if k in ["nsfw", "processed"]
+                        }
+                    ),
                 }
             )
         elif type == FileType.FILMSTRIP:
             payload.update(
                 {
-                    "frameNumber": getattr(options, "frame_number", None),
+                    **(
+                        {"frameNumber": options.get("frame_number")}
+                        if options is not None
+                        else {}
+                    ),
                 }
             )
         elif type == FileType.THUMBNAIL:
@@ -257,7 +283,6 @@ class FileClient:
         request_data: Union[
             Dict[str, Any], Any
         ],  # or Dict[str, Any] | Any in Python 3.10+
-        response_type: Type[T],
     ) -> T:
         """
         Generic helper function to handle multipart upload requests.
@@ -268,17 +293,10 @@ class FileClient:
         Returns:
             T: The deserialized response data.
         """
-        # Convert request data to dictionary if it's a dataclass
-        request_data_dict = (
-            asdict(request_data) if is_dataclass(request_data) else request_data
-        )
 
         # Make the API call
-        data = self._post(endpoint, request_data_dict)
-
-        # Deserialize the response
-        response = deserialize_api_response(data, response_type)
-        return response.data
+        response = self.api_client.post(endpoint, request_data)
+        return response["data"]
 
     def _create_multipart_upload(
         self,
@@ -293,7 +311,7 @@ class FileClient:
         Returns:
             MultipartUpload: Multipart upload data.
         """
-        return self._make_upload_request(endpoint, request_data, MultipartUpload)
+        return self._make_upload_request(endpoint, request_data)
 
     def _refresh_multipart_upload(
         self,
@@ -308,7 +326,7 @@ class FileClient:
         Returns:
             RefreshMultipartUpload: Refresh multipart upload URL data.
         """
-        return self._make_upload_request(endpoint, request_data, RefreshMultipartUpload)
+        return self._make_upload_request(endpoint, request_data)
 
     def _complete_multipart_upload(
         self,
@@ -323,9 +341,7 @@ class FileClient:
         Returns:
             CompleteFileResponseWrapper: Response after completing upload.
         """
-        return self._make_upload_request(
-            endpoint, request_data, CompleteFileResponseWrapper
-        )
+        return self._make_upload_request(endpoint, request_data)
 
     def _upload_file_request(
         self,
@@ -465,6 +481,15 @@ class FileClient:
         Returns:
             Dream | bool | Any: created resource after completing upload
         """
+
+        if type not in [
+            FileType.DREAM,
+            FileType.THUMBNAIL,
+            FileType.FILMSTRIP,
+            FileType.KEYFRAME,
+        ]:
+            raise Exception(f"Type not allowed.")
+
         path = Path(file_path)
         file_extension = path.suffix.lstrip(".")
         file_size = path.stat().st_size
@@ -491,12 +516,13 @@ class FileClient:
         if (
             uuid is None
             and type == FileType.DREAM
-            and (dream := getattr(multipart_upload, "dream", None))
+            and multipart_upload is not None
+            and (dream := multipart_upload.get("dream")) is not None
         ):
-            uuid = dream.uuid
+            uuid = dream["uuid"]
 
-        upload_id = multipart_upload.uploadId
-        urls = multipart_upload.urls
+        upload_id = multipart_upload["uploadId"]
+        urls = multipart_upload["urls"]
         completed_parts: List[CompletedPart] = []
 
         # in progreess bytes uploaded
@@ -523,7 +549,7 @@ class FileClient:
                     file_type=file_extension,
                     options=options,
                 )
-                completed_parts.append(CompletedPart(ETag=etag, PartNumber=part_number))
+                completed_parts.append({"ETag": etag, "PartNumber": part_number})
                 bytes_uploaded += len(part_data)
                 progress_percentage = (bytes_uploaded / file_size) * 100
                 print(f"Upload progress: {progress_percentage:.2f}%")
@@ -546,6 +572,6 @@ class FileClient:
 
         print("Upload completed.")
         if type in [FileType.DREAM, FileType.FILMSTRIP, FileType.THUMBNAIL]:
-            return completed_upload.dream
+            return completed_upload["dream"]
 
         return True

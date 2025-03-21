@@ -1,27 +1,31 @@
 from typing import Optional
-from dataclasses import asdict
-from ..models.api_types import ApiResponse
-from ..models.keyframe_types import (
+from ..client.api_client import ApiClient
+from ..client.file_client import FileClient
+from ..types.api_types import ApiResponse
+from ..types.keyframe_types import (
     Keyframe,
     KeyframeResponseWrapper,
     UpdateKeyframeRequest,
 )
-from ..models.file_upload_types import FileType, UploadFileOptions
-from ..utils.api_utils import deserialize_api_response
+from ..types.file_upload_types import FileType, UploadFileOptions
 
 
 class KeyframeClient:
+    def __init__(self, api_client: ApiClient, file_client: FileClient):
+        self.api_client = api_client
+        self.file_client = file_client
+
     def get_keyframe(self, uuid: str) -> Optional[Keyframe]:
         """
         Retrieves a keyframe by its uuid
         Args:
             uuid (str): keyframe uuid
         Returns:
-            Optional[Keyframe]: An `ApiResponse` object containing a `KeyframeResponseWrapper`
+            Optional[Keyframe]: Found Keyframe
         """
-        data = self._get(f"/keyframe/{uuid}")
-        response = deserialize_api_response(data, KeyframeResponseWrapper)
-        keyframe = response.data.keyframe
+        response = self.api_client.get(f"/keyframe/{uuid}")
+        data: KeyframeResponseWrapper = response["data"]
+        keyframe = data["keyframe"]
         return keyframe
 
     def _create_keyframe_request(self, name: str) -> Optional[Keyframe]:
@@ -30,12 +34,12 @@ class KeyframeClient:
         Args:
             name (str): keyframe name
         Returns:
-            Optional[Keyframe]: An `ApiResponse` object containing a `KeyframeResponseWrapper`
+            Optional[Keyframe]: Found Keyframe
         """
         request_data_dict = {"name": name}
-        data = self._post(f"/keyframe/", request_data_dict)
-        response = deserialize_api_response(data, KeyframeResponseWrapper)
-        keyframe = response.data.keyframe
+        response = self.api_client.post(f"/keyframe/", request_data_dict)
+        data: KeyframeResponseWrapper = response["data"]
+        keyframe = data["keyframe"]
         return keyframe
 
     def _create_keyframe(
@@ -46,34 +50,31 @@ class KeyframeClient:
         Args:
             name (str): keyframe name
         Returns:
-            Optional[Keyframe]: An `ApiResponse` object containing a `KeyframeResponseWrapper`
+            Optional[Keyframe]: Found Keyframe
         """
         keyframe = self._create_keyframe_request(name)
         if file_path:
-            self.upload_file(
+            self.file_client.upload_file(
                 file_path=file_path,
                 type=FileType.KEYFRAME,
-                options=UploadFileOptions(uuid=keyframe.uuid),
+                options={"uuid": keyframe.uuid},
             )
 
         return keyframe
 
-    def update_keyframe(
-        self, uuid: str, request_data: UpdateKeyframeRequest
-    ) -> Keyframe:
+    def update_keyframe(self, uuid: str, data: UpdateKeyframeRequest) -> Keyframe:
         """
         Updates a keyframe by its uuid
         Args:
             uuid (str): keyframe uuid
             request_data (UpdateKeyframeRequest): keyframe data
         Returns:
-            Keyframe: An `ApiResponse` object containing a `KeyframeResponseWrapper`
+            Keyframe: Found Keyframe
         """
-        request_data_dict = asdict(request_data)
-        data = self._put(f"/keyframe/{uuid}", request_data_dict)
-        response = deserialize_api_response(data, KeyframeResponseWrapper)
-        keyframe = response.data.keyframe
-        return keyframe
+        response = self.api_client.put(f"/keyframe/{uuid}", data)
+        response_data: KeyframeResponseWrapper = response["data"]
+        keyframe = response_data["keyframe"]
+        return
 
     def delete_keyframe(self, uuid: str) -> Optional[ApiResponse]:
         """
@@ -81,8 +82,7 @@ class KeyframeClient:
         Args:
             uuid (str): keyframe uuid
         Returns:
-            Optional[ApiResponse]: An `ApiResponse` object
+            Optional[bool]: Boolean value that notifies if keyframe was deleted
         """
-        data = self._delete(f"/keyframe/{uuid}")
-        response = deserialize_api_response(data, ApiResponse)
-        return response.success
+        response = self.api_client.delete(f"/keyframe/{uuid}")
+        return response["success"]

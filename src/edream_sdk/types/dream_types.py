@@ -62,7 +62,7 @@ class Dream(TypedDict):
 
 # Data class for PresignedPost
 @dataclass
-class PresignedPost:
+class PresignedPost(TypedDict):
     url: str
     uuid: str
     fields: Dict[str, str]
@@ -70,14 +70,14 @@ class PresignedPost:
 
 # Data class for PresignedPostRequest
 @dataclass
-class PresignedPostRequest:
+class PresignedPostRequest(TypedDict):
     params: Optional[PresignedPost] = None
     file: Optional[ByteString] = None
 
 
 # Data class for MultipartUpload
 @dataclass
-class MultipartUpload:
+class MultipartUpload(TypedDict):
     urls: Optional[List[str]] = None
     dream: Optional[Dream] = None
     uploadId: Optional[str] = None
@@ -85,7 +85,7 @@ class MultipartUpload:
 
 # Data class for RefreshMultipartUpload
 @dataclass
-class RefreshMultipartUpload:
+class RefreshMultipartUpload(TypedDict):
     url: Optional[str] = None
     dream: Optional[Dream] = None
     uploadId: Optional[str] = None
@@ -93,7 +93,7 @@ class RefreshMultipartUpload:
 
 # Data class for MultipartUploadRequest
 @dataclass
-class MultipartUploadRequest:
+class MultipartUploadRequest(TypedDict):
     presignedUrl: str
     filePart: ByteString
     partNumber: int
@@ -108,7 +108,7 @@ class DreamResponseWrapper(TypedDict):
 
 # Data class for DreamVoteResponseWrapper
 @dataclass
-class DreamVoteResponseWrapper:
+class DreamVoteResponseWrapper(TypedDict):
     vote: Optional[Vote]
 
 
@@ -127,7 +127,7 @@ class UpdateDreamRequest(TypedDict):
 
 # Data class for SetDreamProcessedRequest
 @dataclass
-class SetDreamProcessedRequest:
+class SetDreamProcessedRequest(TypedDict):
     processedVideoSize: Optional[int] = None
     processedVideoFrames: Optional[int] = None
     processedVideoFPS: Optional[int] = None

@@ -453,9 +453,9 @@ class FileClient:
                     refresh_upload_endpoint = self._get_refresh_url_endpoint(type, uuid)
                     refresh_payload = self._build_refresh_payload(
                         type=type,
-                        uploadId=upload_id,
-                        part=part_number,
-                        extension=file_type,
+                        upload_id=upload_id,
+                        part_number=part_number,
+                        file_extension=file_type,
                         options=options,
                     )
                     refresh_result = self._refresh_multipart_upload(

@@ -2,7 +2,6 @@ from typing import Optional
 from dataclasses import asdict
 from ..client.api_client import ApiClient
 from ..client.file_client import FileClient
-from ..utils.playlist_utils import format_playlist
 from ..types.dream_types import Dream
 from ..types.keyframe_types import Keyframe
 from ..types.dream_types import DreamFileType
@@ -34,7 +33,7 @@ class PlaylistClient:
         """
         response = self.api_client.get(f"/playlist/{uuid}")
         data: PlaylistResponseWrapper = response["data"]
-        playlist = format_playlist(data["playlist"])
+        playlist = data["playlist"]
         return playlist
 
     def update_playlist(self, uuid: str, data: UpdatePlaylistRequest) -> Playlist:

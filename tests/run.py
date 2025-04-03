@@ -37,9 +37,7 @@ def run():
     # playlist
     # playlist = edream_client.get_playlist("14bdc320-2c06-41e4-8a90-639385c491d9")
     # print keyframes uuids
-    # print(playlist["keyframes"])
-    # for k in playlist["keyframes"]:
-    #     print(k["uuid"])
+    # print(playlist)
     # edream_client.update_playlist(
     #     "39bcfc87-d13c-4106-897f-ae490d46b0d1", {"name": "playlist updated from python"}
     # )

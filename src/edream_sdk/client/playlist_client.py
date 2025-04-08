@@ -142,7 +142,6 @@ class PlaylistClient:
             playlist_uuid=playlist["uuid"], keyframe_uuid=keyframe["uuid"]
         )
         playlist["playlistKeyframes"].append(new_playlist_keyframe)
-        playlist["keyframes"].append(keyframe)
         return keyframe
 
     def delete_keyframe_from_playlist(

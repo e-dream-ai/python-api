@@ -144,6 +144,27 @@ class PlaylistClient:
         playlist["playlistKeyframes"].append(new_playlist_keyframe)
         return keyframe
 
+    def reorder_playlist(
+        self,
+        uuid: str,
+        order: [dict],
+    ) -> Optional[bool]:
+        """
+        Reorders the items of a playlist
+        Args:
+            uuid (str): playlist uuid
+            order ([dict]): an array of dicts specifying new positions of current items.
+                            each dict is {"id": X, "order": Y} and the ID is of the item,
+                            and the order is its new position.
+        Returns:
+            Optional[bool]: Boolean value that notifies success
+        """
+        form = {"order": order}
+        print(form)
+        print(order)
+        response = self.api_client.put(f"/playlist/{uuid}/order", form)
+        return response["success"]
+
     def delete_keyframe_from_playlist(
         self,
         uuid: str,

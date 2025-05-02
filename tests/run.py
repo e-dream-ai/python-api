@@ -84,6 +84,10 @@ def run():
     #     uuid="14bdc320-2c06-41e4-8a90-639385c491d9", playlist_keyframe_id=16
     # )
 
+    # result = edream_client.reorder_playlist(
+    #     uuid="ab76a874-928c-45b1-88b6-b059ee54ef94", order=[{"id": 557, "order": 5}]
+    # )
+
     # edream_client.delete_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
 
     """

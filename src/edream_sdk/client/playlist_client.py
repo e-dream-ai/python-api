@@ -160,8 +160,6 @@ class PlaylistClient:
             Optional[bool]: Boolean value that notifies success
         """
         form = {"order": order}
-        print(form)
-        print(order)
         response = self.api_client.put(f"/playlist/{uuid}/order", form)
         return response["success"]
 

@@ -1,16 +1,18 @@
 # edream-sdk
 
-the project and application has generally been renamed from e-dream to infinidream.
-this module, however, has not yet been renamed.
+the project and application has generally been renamed from e-dream to
+infinidream.  this module, however, has not yet been renamed, but it
+works fine with the current servers.
 
 ### local installation
 
-If you need to setup locally to test or run code, follow [BUILD.md](BUILD.md) documentation.
+If you need to setup locally to test or run code, follow
+[BUILD.md](BUILD.md) documentation.
 
 ### simple example
 
-Get an API key from your profile on the server, and store it in a .env file.
-Then connect as follows:
+Get an API key from your profile on the server, and store it in a .env
+file.  Then connect as follows:
 
 ```python
 import os

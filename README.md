@@ -1,5 +1,7 @@
 # edream-sdk
 
+copyright (c) 2025 e-dream, inc
+
 the project and application has generally been renamed from e-dream to
 infinidream.  this module, however, has not yet been renamed, but it
 works fine with the current servers.
@@ -19,9 +21,8 @@ import os
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
 
-API_KEY = os.getenv("API_KEY")
 edream_client = create_edream_client(backend_url="https://api-alpha.infinidream.ai/api/v1",
-                                     api_key=API_KEY)
+                                     api_key=os.getenv("API_KEY"))
 user = edream_client.get_logged_user()
 print(user)
 ```

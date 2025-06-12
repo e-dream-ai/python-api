@@ -36,3 +36,9 @@ python tests/run.py
 ```
 
 this file has an example of every API call.
+
+### REST API
+
+This Python SDK just wraps the servers' REST API.  Its documentation
+is served by swagger on
+[staging](https://e-dream-76c98b08cc5d.herokuapp.com/api/v1/api-docs).

@@ -79,3 +79,13 @@ class ApiClient:
         self, endpoint: str, data: Optional[Dict[str, Any]] = None
     ) -> ApiResponse:
         return self._request("DELETE", endpoint, data=data)
+
+
+class FeedClient:
+    def __init__(self, api_client):
+        self.api_client = api_client
+
+    def get_ranked_feed(self, take: int = 10, skip: int = 0):
+        params = {"take": take, "skip": skip}
+        response = self.api_client.get("/feed/ranked", params=params)
+        return response["data"]

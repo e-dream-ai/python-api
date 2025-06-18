@@ -5,6 +5,7 @@ from .keyframe_client import KeyframeClient
 from .playlist_client import PlaylistClient
 from .user_client import UserClient
 from .file_client import FileClient
+from .api_client import FeedClient
 
 
 class EDreamClient(
@@ -18,6 +19,7 @@ class EDreamClient(
         self.dream_client = DreamClient(self.api_client)
         self.keyframe_client = KeyframeClient(self.api_client, self.file_client)
         self.playlist_client = PlaylistClient(self.api_client, self.file_client)
+        self.feed = FeedClient(self.api_client)
 
         # Manually set up inheritance (so methods can be use on the main client)
         ApiClient.__init__(self, backend_url, api_key)

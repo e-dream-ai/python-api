@@ -84,7 +84,6 @@ class CreatePlaylistRequest(TypedDict):
     name: str
     description: Optional[str] = None
     nsfw: Optional[bool] = None
-    # Note: 'hidden' field is only allowed for admin users and should not be included in regular requests
 
 
 # Data class for UpdatePlaylistRequest

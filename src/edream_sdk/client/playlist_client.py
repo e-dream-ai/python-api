@@ -10,6 +10,7 @@ from ..types.playlist_types import (
     PlaylistItem,
     PlaylistItemType,
     PlaylistKeyframe,
+    CreatePlaylistRequest,
     UpdatePlaylistRequest,
     PlaylistResponseWrapper,
     PlaylistItemResponseWrapper,
@@ -22,6 +23,19 @@ class PlaylistClient:
     def __init__(self, api_client: ApiClient, file_client: FileClient):
         self.api_client = api_client
         self.file_client = file_client
+
+    def create_playlist(self, data: CreatePlaylistRequest) -> Playlist:
+        """
+        Creates a new playlist
+        Args:
+            data (CreatePlaylistRequest): playlist creation data
+        Returns:
+            Playlist: Created Playlist
+        """
+        response = self.api_client.post("/playlist", data)
+        response_data: PlaylistResponseWrapper = response["data"]
+        playlist = response_data["playlist"]
+        return playlist
 
     def get_playlist(self, uuid: str) -> Playlist:
         """

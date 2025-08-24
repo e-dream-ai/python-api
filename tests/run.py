@@ -1,143 +1,228 @@
-import json
-from edream_sdk.types.playlist_types import PlaylistItemType, UpdatePlaylistRequest
-from edream_sdk.types.dream_types import (
-    UpdateDreamRequest,
-    DreamFileType,
-)
-from edream_sdk.types.keyframe_types import (
-    UpdateKeyframeRequest,
-)
-from edream_sdk.types.file_upload_types import UploadFileOptions, FileType
+import os
+import time
+from typing import Optional, Dict, Any
+from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
+from edream_sdk.types.playlist_types import CreatePlaylistRequest
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Constants
+BACKEND_URL = "https://api-stage.infinidream.ai/api/v1"
+TEST_PLAYLIST_UUID = ""
+TEST_DESCRIPTION = "This description was added via Python SDK!"
 
 
-def run():
-    """
-    Initialize ApiClient with backend_url and api_key instance
-    """
-    edream_client = create_edream_client(
-        backend_url="http://localhost:8080/api/v1", api_key="API_KEY"
+def get_api_key() -> Optional[str]:
+    """Retrieve and validate API key from environment variables."""
+    api_key = os.getenv("API_KEY")
+    
+    if not api_key:
+        print("ERROR: No API key found. Please check your .env file.")
+        return None
+    return api_key
+
+
+def create_client(api_key: str):
+    """Create and return an eDream client instance."""
+    return create_edream_client(
+        backend_url=BACKEND_URL,
+        api_key=api_key
     )
 
-    """
-    User functions
-    """
 
-    # user = edream_client.get_logged_user()
-    # print(user["name"])
+def test_user_connection(client) -> bool:
+    """Test basic connection by getting logged user info."""
+    try:
+        user = client.get_logged_user()
+        print(f"Connected as: {user['name']}")
+        return True
+    except Exception as e:
+        print(f"Error connecting to API: {e}")
+        return False
 
-    """
-    Dream functions
-    """
 
-    # dream = edream_client.get_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+def test_playlist_operations(client, playlist_uuid: str) -> None:
+    """Test playlist retrieval and update operations."""
+    try:
+        # Get existing playlist
+        playlist = client.get_playlist(playlist_uuid)
+        print(f"Current playlist: {playlist['name']}")
+        print(f"Current description: {playlist.get('description', 'No description')}")
+        
+        # Update playlist with description
+        update_data = {
+            "name": playlist['name'],
+            "description": TEST_DESCRIPTION
+        }
+        
+        updated_playlist = client.update_playlist(playlist_uuid, update_data)
+        print(f"Updated playlist description: {updated_playlist.get('description')}")
+        
+    except Exception as e:
+        print(f"Error during playlist operations: {e}")
 
-    # print(dream)
 
-    # print(dream["uuid"])
+def test_create_playlist(client) -> Optional[str]:
+    """Test playlist creation functionality."""
+    try:
+        basic_playlist_data: CreatePlaylistRequest = {
+            "name": f"Test Playlist {int(time.time())}"
+        }
+        
+        print("Creating basic playlist...")
+        basic_playlist = client.create_playlist(basic_playlist_data)
+        print(f"✓ Created basic playlist: {basic_playlist['name']} (UUID: {basic_playlist['uuid']})")
+        
+        detailed_playlist_data: CreatePlaylistRequest = {
+            "name": f"Detailed Test Playlist {int(time.time())}",
+            "description": "This is a test playlist created via Python SDK with full details",
+            "nsfw": False
+        }
+        
+        print("Creating detailed playlist...")
+        detailed_playlist = client.create_playlist(detailed_playlist_data)
+        print(f"  Created detailed playlist: {detailed_playlist['name']} (UUID: {detailed_playlist['uuid']})")
+        print(f"  Description: {detailed_playlist.get('description', 'No description')}")
+        print(f"  NSFW: {detailed_playlist.get('nsfw', 'Not set')}")
+        
+        nsfw_playlist_data: CreatePlaylistRequest = {
+            "name": f"NSFW Test Playlist {int(time.time())}",
+            "description": "This is an NSFW test playlist",
+            "nsfw": True
+        }
+        
+        print("Creating NSFW playlist...")
+        nsfw_playlist = client.create_playlist(nsfw_playlist_data)
+        print(f"✓ Created NSFW playlist: {nsfw_playlist['name']} (UUID: {nsfw_playlist['uuid']})")
+        print(f"  NSFW flag: {nsfw_playlist.get('nsfw', 'Not set')}")
+        
+        return basic_playlist['uuid']
+        
+    except Exception as e:
+        print(f"✗ Error during playlist creation: {e}")
+        return None
 
-    # edream_client.get_dream_vote("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
 
-    # edream_client.update_dream(
-    #     "8bdcab8b-404d-4651-b24b-42edd21f1b4d", {"name": "name from python"}
-    # )
+def test_create_and_update_playlist(client) -> None:
+    """Test creating a playlist and then updating it."""
+    try:
+        create_data: CreatePlaylistRequest = {
+            "name": f"Create-Update Test {int(time.time())}",
+            "description": "Initial description"
+        }
+        
+        print("Creating playlist for update test...")
+        playlist = client.create_playlist(create_data)
+        playlist_uuid = playlist['uuid']
+        print(f"✓ Created playlist for testing: {playlist['name']}")
+        
+        update_data = {
+            "name": f"Updated {playlist['name']}",
+            "description": "Updated description via Python SDK"
+        }
+        
+        print("Updating the created playlist...")
+        updated_playlist = client.update_playlist(playlist_uuid, update_data)
+        print(f"✓ Updated playlist: {updated_playlist['name']}")
+        print(f"  New description: {updated_playlist.get('description')}")
+        
+    except Exception as e:
+        print(f"✗ Error during create-update test: {e}")
 
-    # edream_client.downvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
 
-    # edream_client.upvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+def test_playlist_edge_cases(client) -> None:
+    """Test edge cases for playlist creation."""
+    try:
+        print("Testing edge cases...")
+        
+        empty_desc_data: CreatePlaylistRequest = {
+            "name": f"Empty Description Test {int(time.time())}",
+            "description": ""
+        }
+        
+        empty_desc_playlist = client.create_playlist(empty_desc_data)
+        print(f"✓ Created playlist with empty description: {empty_desc_playlist['name']}")
+        
+        # Test playlist with long name
+        long_name_data: CreatePlaylistRequest = {
+            "name": f"Very Long Playlist Name Test That Should Still Work Fine {int(time.time())}"
+        }
+        
+        long_name_playlist = client.create_playlist(long_name_data)
+        print(f"✓ Created playlist with long name: {long_name_playlist['name'][:50]}...")
+        
+        # Test playlist with only required field
+        minimal_data: CreatePlaylistRequest = {
+            "name": f"Minimal Test {int(time.time())}"
+        }
+        
+        minimal_playlist = client.create_playlist(minimal_data)
+        print(f"✓ Created minimal playlist: {minimal_playlist['name']}")
+        
+    except Exception as e:
+        print(f"✗ Error during edge case testing: {e}")
 
-    # edream_client.delete_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
 
-    """
-    Playlist functions
-    """
-    # playlist = edream_client.get_playlist("14bdc320-2c06-41e4-8a90-639385c491d9")
+def test_playlist_description() -> None:
+    """Test the existing playlist description functionality."""
+    # Get API key
+    api_key = get_api_key()
+    if not api_key:
+        return
+    
+    # Create client
+    client = create_client(api_key)
+    
+    # Test connection
+    if not test_user_connection(client):
+        return
+    
+    # Test playlist operations
+    test_playlist_operations(client, TEST_PLAYLIST_UUID)
 
-    # print(playlist)
 
-    # edream_client.update_playlist(
-    #     "39bcfc87-d13c-4106-897f-ae490d46b0d1", {"name": "playlist updated from python"}
-    # )
-
-    # edream_client.add_item_to_playlist(
-    #     playlist_uuid="b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4",
-    #     type=PlaylistItemType.DREAM,
-    #     item_uuid="d20cad5c-b294-4094-a19d-f5ab043980ae",
-    # )
-
-    # edream_client.delete_item_from_playlist(
-    #     uuid="b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4", playlist_item_id=324
-    # )
-
-    # edream_client.add_file_to_playlist(
-    #     uuid="b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4",
-    #     file_path="path_to_file/python_video.mp4",
-    # )
-
-    # edream_client.add_keyframe_to_playlist(
-    #     playlist,
-    #     "keyframe from python",
-    #     file_path="path_to_file/keyframe.jpg",
-    # )
-
-    # edream_client.delete_keyframe_from_playlist(
-    #     uuid="14bdc320-2c06-41e4-8a90-639385c491d9", playlist_keyframe_id=16
-    # )
-
-    # result = edream_client.reorder_playlist(
-    #     uuid="ab76a874-928c-45b1-88b6-b059ee54ef94", order=[{"id": 557, "order": 5}]
-    # )
-
-    # edream_client.delete_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
-
-    """
-    File functions
-    """
-    # edream_client.upload_file(
-    #     file_path="path_to_file/dream.mp4",
-    #     type=DreamFileType.DREAM,
-    # )
-
-    # edream_client.download_file(
-    #     "file_url",
-    #     "file_path",
-    # )
-
-    """
-    Upload thumbnail
-    """
-    # edream_client.upload_file(
-    #     file_path="path_to_file/thumbnail.png",
-    #     type=DreamFileType.THUMBNAIL,
-    #     options={"uuid": "8bdcab8b-404d-4651-b24b-42edd21f1b4d"},
-    # )
-
-    """
-    Upload filmstrip
-    """
-    # edream_client.upload_file(
-    #     file_path="path_to_file/frame.png",
-    #     type=DreamFileType.FILMSTRIP,
-    #     options={"uuid": "8bdcab8b-404d-4651-b24b-42edd21f1b4d", "frame_number": 701},
-    # )
-
-    """
-    Keyframe functions
-    """
-
-    # keyframe = edream_client.get_keyframe("7c38cb05-838b-4a7d-94dc-7b713270731e")
-
-    # edream_client.update_keyframe(
-    #     "7c38cb05-838b-4a7d-94dc-7b713270731e",
-    #     {"name": "python updated kf"},
-    # )
-
-    # edream_client.delete_keyframe(
-    #     "7c38cb05-838b-4a7d-94dc-7b713270731e",
-    # )
-
-    pass
+def test_comprehensive_playlist_functionality() -> None:
+    """Test all playlist functionality including creation."""
+    print("=" * 60)
+    print("COMPREHENSIVE PLAYLIST FUNCTIONALITY TESTS")
+    print("=" * 60)
+    
+    # Get API key
+    api_key = get_api_key()
+    if not api_key:
+        return
+    
+    # Create client
+    client = create_client(api_key)
+    
+    # Test connection
+    print("\n1. Testing connection...")
+    if not test_user_connection(client):
+        return
+    
+    print("\n2. Testing playlist creation...")
+    created_playlist_uuid = test_create_playlist(client)
+    
+    print("\n3. Testing create and update workflow...")
+    test_create_and_update_playlist(client)
+    
+    print("\n4. Testing edge cases...")
+    test_playlist_edge_cases(client)
+    
+    if created_playlist_uuid:
+        print(f"\n5. Testing operations on created playlist...")
+        test_playlist_operations(client, created_playlist_uuid)
+    
+    print("\n6. Testing operations on existing playlist...")
+    test_playlist_operations(client, TEST_PLAYLIST_UUID)
+    
+    print("\n" + "=" * 60)
+    print("ALL TESTS COMPLETED")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
-    run()
+    test_comprehensive_playlist_functionality()
+    

@@ -61,6 +61,7 @@ class Playlist(TypedDict):
     itemCount: Optional[int] = 0
     featureRank: Optional[int] = 0
     nsfw: Optional[bool] = None
+    description: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
@@ -77,6 +78,15 @@ class PlaylistResponseWrapper(TypedDict):
     playlist: Optional[Playlist]
 
 
+# Data class for CreatePlaylistRequest
+@dataclass
+class CreatePlaylistRequest(TypedDict):
+    name: str
+    description: Optional[str] = None
+    nsfw: Optional[bool] = None
+    # Note: 'hidden' field is only allowed for admin users and should not be included in regular requests
+
+
 # Data class for UpdatePlaylistRequest
 @dataclass
 class UpdatePlaylistRequest(TypedDict):
@@ -84,6 +94,7 @@ class UpdatePlaylistRequest(TypedDict):
     featureRank: Optional[int] = None
     displayedOwner: Optional[int] = None
     nsfw: Optional[bool] = None
+    description: Optional[str] = None
 
 
 # Data class for PlaylistItem response

@@ -15,6 +15,8 @@ from ..types.playlist_types import (
     PlaylistResponseWrapper,
     PlaylistItemResponseWrapper,
     PlaylistKeyframeResponseWrapper,
+    PlaylistItemsResponseWrapper,
+    PlaylistKeyframesResponseWrapper,
 )
 from ..utils.file_utils import verify_file_path
 
@@ -194,6 +196,50 @@ class PlaylistClient:
             f"/playlist/{uuid}/keyframe/{playlist_keyframe_id}"
         )
         return response["success"]
+
+    def get_playlist_items(
+        self, uuid: str, take: Optional[int] = None, skip: Optional[int] = None
+    ) -> PlaylistItemsResponseWrapper:
+        """
+        Retrieves paginated playlist items
+        Args:
+            uuid (str): playlist uuid
+            take (Optional[int]): number of items to return (default 30, max 100)
+            skip (Optional[int]): number of items to skip (default 0)
+        Returns:
+            PlaylistItemsResponseWrapper: Paginated playlist items with total count
+        """
+        params = {}
+        if take is not None:
+            params["take"] = take
+        if skip is not None:
+            params["skip"] = skip
+        
+        response = self.api_client.get(f"/playlist/{uuid}/items", params=params)
+        data: PlaylistItemsResponseWrapper = response["data"]
+        return data
+
+    def get_playlist_keyframes(
+        self, uuid: str, take: Optional[int] = None, skip: Optional[int] = None
+    ) -> PlaylistKeyframesResponseWrapper:
+        """
+        Retrieves paginated playlist keyframes
+        Args:
+            uuid (str): playlist uuid
+            take (Optional[int]): number of keyframes to return (default 30, max 100)
+            skip (Optional[int]): number of keyframes to skip (default 0)
+        Returns:
+            PlaylistKeyframesResponseWrapper: Paginated playlist keyframes with total count
+        """
+        params = {}
+        if take is not None:
+            params["take"] = take
+        if skip is not None:
+            params["skip"] = skip
+        
+        response = self.api_client.get(f"/playlist/{uuid}/keyframes", params=params)
+        data: PlaylistKeyframesResponseWrapper = response["data"]
+        return data
 
     def delete_playlist(self, uuid: str) -> Optional[bool]:
         """

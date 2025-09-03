@@ -100,3 +100,15 @@ class UpdatePlaylistRequest(TypedDict):
 @dataclass
 class PlaylistItemResponseWrapper(TypedDict):
     playlistItem: Optional[PlaylistItem]
+
+
+# Data class for paginated playlist items response
+class PlaylistItemsResponseWrapper(TypedDict):
+    items: List[PlaylistItem]
+    totalCount: int
+
+
+# Data class for paginated playlist keyframes response
+class PlaylistKeyframesResponseWrapper(TypedDict):
+    keyframes: List[PlaylistKeyframe]
+    totalCount: int

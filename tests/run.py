@@ -106,6 +106,26 @@ def run():
 
     # edream_client.delete_playlist("b9a643bd-f6d0-48ac-ba43-b10dcf4ecda4")
 
+    # playlist_items = edream_client.get_playlist_items("13489b20-cc0b-4923-8ea8-3f64015fe389")
+    # print(f"Playlist items: {playlist_items['items']}")
+    # print(f"Total items count: {playlist_items['totalCount']}")
+
+    # playlist_items_paginated = edream_client.get_playlist_items(
+    #     "13489b20-cc0b-4923-8ea8-3f64015fe389", take=10, skip=0
+    # )
+    # print(f"Playlist items: {playlist_items_paginated['items']}")
+    # print(f"Paginated playlist items (take=10, skip=0): {len(playlist_items_paginated['items'])} items")
+
+    # playlist_keyframes = edream_client.get_playlist_keyframes("13489b20-cc0b-4923-8ea8-3f64015fe389")
+    # print(f"Playlist keyframes: {playlist_keyframes['keyframes']}")
+    # print(f"Total keyframes count: {playlist_keyframes['totalCount']}")
+
+    # playlist_keyframes_paginated = edream_client.get_playlist_keyframes(
+    #     "13489b20-cc0b-4923-8ea8-3f64015fe389", take=5, skip=0
+    # )
+    # print(f"Playlist keyframes: {playlist_keyframes_paginated['keyframes']}")
+    # print(f"Paginated playlist keyframes (take=5, skip=0): {len(playlist_keyframes_paginated['keyframes'])} keyframes")
+
     """
     File functions
     """

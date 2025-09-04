@@ -63,8 +63,7 @@ def run():
     """
     Playlist functions
     """
-    # playlist = edream_client.get_playlist("bd5615c2-5a68-4e33-b9c1-6649fb09dc03", populate_items=True, populate_keyframes=True)
-
+    # playlist = edream_client.get_playlist("bd5615c2-5a68-4e33-b9c1-6649fb09dc03")
     # print(playlist)
 
     # playlist = edream_client.create_playlist(

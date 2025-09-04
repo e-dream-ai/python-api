@@ -39,17 +39,38 @@ class PlaylistClient:
         playlist = response_data["playlist"]
         return playlist
 
-    def get_playlist(self, uuid: str) -> Playlist:
+    def get_playlist(self, uuid: str, auto_populate: bool = True) -> Playlist:
         """
-        Retrieves a playlist by its uuid
+        Retrieves a playlist by its uuid with optional population of items and keyframes
         Args:
             uuid (str): playlist uuid
+            auto_populate (bool): whether to fetch and populate items and keyframes (default True)
         Returns:
-            Playlist: Found Playlist
+            Playlist: Found Playlist with items and playlistKeyframes populated if requested
         """
         response = self.api_client.get(f"/playlist/{uuid}")
         data: PlaylistResponseWrapper = response["data"]
         playlist = data["playlist"]
+
+        if auto_populate:
+            items_response = self.get_playlist_items(uuid, take=1, skip=0)
+            total_items = items_response["totalCount"]
+            
+            if total_items > 0:
+                all_items_response = self.get_playlist_items(uuid, take=total_items, skip=0)
+                playlist["items"] = all_items_response["items"]
+            else:
+                playlist["items"] = []
+
+            keyframes_response = self.get_playlist_keyframes(uuid, take=1, skip=0)
+            total_keyframes = keyframes_response["totalCount"]
+            
+            if total_keyframes > 0:
+                all_keyframes_response = self.get_playlist_keyframes(uuid, take=total_keyframes, skip=0)
+                playlist["playlistKeyframes"] = all_keyframes_response["keyframes"]
+            else:
+                playlist["playlistKeyframes"] = []
+        
         return playlist
 
     def update_playlist(self, uuid: str, data: UpdatePlaylistRequest) -> Playlist:

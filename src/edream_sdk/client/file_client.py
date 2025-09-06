@@ -387,9 +387,7 @@ class FileClient:
 
         try:
             print(f"Downloading from URL: {url}")
-            
-            # Skip HEAD request for signed URLs (like Cloudflare R2) as they may not support it
-            # Go directly to GET request for better compatibility
+
             response = requests.get(url, stream=True)
             print(f"GET request status code: {response.status_code}")
             

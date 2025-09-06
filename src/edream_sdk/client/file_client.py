@@ -386,17 +386,20 @@ class FileClient:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         try:
-            # Send a HEAD request to get the content length
-            head_response = requests.head(url)
-            head_response.raise_for_status()
-            file_size = int(head_response.headers.get("content-length", 0))
+            print(f"Downloading from URL: {url}")
 
-            # Send a GET request to the URL
             response = requests.get(url, stream=True)
+            print(f"GET request status code: {response.status_code}")
+            
             # Raise an error for bad status codes
             response.raise_for_status()
 
-            # In progreess bytes downloaded
+            # Try to get file size from response headers
+            file_size = int(response.headers.get("content-length", 0))
+            if file_size > 0:
+                print(f"Expected file size: {file_size} bytes")
+
+            # In progress bytes downloaded
             bytes_downloaded = 0
 
             # Write the content to a file
@@ -406,13 +409,41 @@ class FileClient:
                         file.write(chunk)
                         bytes_downloaded += len(chunk)
 
-                    progress_percentage = (bytes_downloaded / file_size) * 100
-                    print(f"Download progress: {progress_percentage:.2f}%")
+                    if file_size > 0:
+                        progress_percentage = (bytes_downloaded / file_size) * 100
+                        print(f"Download progress: {progress_percentage:.2f}%")
 
-        except requests.RequestException as e:
+            print(f"Download completed successfully. Total bytes: {bytes_downloaded}")
+            
+            # Verify the file was created and has content
+            if os.path.exists(file_path):
+                actual_size = os.path.getsize(file_path)
+                print(f"File saved with size: {actual_size} bytes")
+                return actual_size > 0
+            else:
+                print("ERROR: File was not created")
+                return False
+
+        except requests.exceptions.HTTPError as http_err:
+            print(f"HTTP error occurred: {http_err}")
+            print(f"Response status code: {http_err.response.status_code}")
+            if hasattr(http_err.response, 'headers'):
+                print(f"Response headers: {dict(http_err.response.headers)}")
+            if hasattr(http_err.response, 'content') and http_err.response.content:
+                print(f"Response content: {http_err.response.content[:500]}")
             return False
-
-        return True
+        except requests.exceptions.ConnectionError as conn_err:
+            print(f"Connection error occurred: {conn_err}")
+            return False
+        except requests.exceptions.Timeout as timeout_err:
+            print(f"Timeout error occurred: {timeout_err}")
+            return False
+        except requests.exceptions.RequestException as req_err:
+            print(f"Request error occurred: {req_err}")
+            return False
+        except Exception as e:
+            print(f"Unexpected error occurred: {e}")
+            return False
 
     def _upload_file_part(
         self,

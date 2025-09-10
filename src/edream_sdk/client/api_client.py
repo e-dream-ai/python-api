@@ -89,3 +89,61 @@ class FeedClient:
         params = {"take": take, "skip": skip}
         response = self.api_client.get("/feed/ranked", params=params)
         return response["data"]
+
+    def get_feed(self, take: int = 48, skip: int = 0, search: str = None, 
+                 user_uuid: str = None, feed_type: str = None, only_hidden: bool = None):
+        """
+        Get regular feed content
+        
+        Args:
+            take (int): Number of items to take (default: 48)
+            skip (int): Number of items to skip (default: 0)
+            search (str, optional): Search query
+            user_uuid (str, optional): Filter by user UUID
+            feed_type (str, optional): Type filter ("dream", "playlist", "all")
+            only_hidden (bool, optional): Show only hidden items
+            
+        Returns:
+            dict: Feed response with feed items and count
+        """
+        params = {"take": take, "skip": skip}
+        if search:
+            params["search"] = search
+        if user_uuid:
+            params["userUUID"] = user_uuid
+        if feed_type:
+            params["type"] = feed_type
+        if only_hidden is not None:
+            params["onlyHidden"] = str(only_hidden).lower()
+            
+        response = self.api_client.get("/feed", params=params)
+        return response["data"]
+
+    def get_grouped_feed(self, take: int = 48, skip: int = 0, search: str = None, 
+                        user_uuid: str = None, feed_type: str = None, only_hidden: bool = None):
+        """
+        Get grouped feed content with virtual playlists
+        
+        Args:
+            take (int): Number of items to take (default: 48)
+            skip (int): Number of items to skip (default: 0)
+            search (str, optional): Search query
+            user_uuid (str, optional): Filter by user UUID
+            feed_type (str, optional): Type filter ("dream", "playlist", "all")
+            only_hidden (bool, optional): Show only hidden items
+            
+        Returns:
+            dict: Grouped feed response with feedItems, virtualPlaylists, and count
+        """
+        params = {"take": take, "skip": skip}
+        if search:
+            params["search"] = search
+        if user_uuid:
+            params["userUUID"] = user_uuid
+        if feed_type:
+            params["type"] = feed_type
+        if only_hidden is not None:
+            params["onlyHidden"] = str(only_hidden).lower()
+            
+        response = self.api_client.get("/feed/grouped", params=params)
+        return response["data"]

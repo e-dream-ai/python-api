@@ -171,6 +171,25 @@ def run():
     #     "7c38cb05-838b-4a7d-94dc-7b713270731e",
     # )
 
+    """
+    Feed functions
+    """
+    
+    # Test get_ranked_feed
+    # ranked_feed = edream_client.feed.get_ranked_feed(take=10, skip=0)
+    # print(f"Ranked feed count: {ranked_feed['count']}")
+    # print(f"Ranked feed items: {len(ranked_feed['feed'])}")
+    
+    # Test get_feed (regular feed)
+    # regular_feed = edream_client.feed.get_feed(take=20, skip=0)
+    # print(f"Regular feed count: {regular_feed['count']}")
+    # print(f"Regular feed items: {len(regular_feed['feed'])}")
+    
+    # Test get_grouped_feed (NEW ENDPOINT)
+    # grouped_feed = edream_client.feed.get_grouped_feed(take=48, skip=0)
+    # print(f"Grouped feed count: {grouped_feed['count']}")
+    # print(f"Grouped feed items: {len(grouped_feed['feedItems'])}")
+    # print(f"Virtual playlists: {len(grouped_feed['virtualPlaylists'])}")
     pass
 
 

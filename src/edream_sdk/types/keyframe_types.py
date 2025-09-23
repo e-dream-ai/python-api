@@ -3,8 +3,7 @@ from dataclasses import dataclass
 from .user_types import User
 
 
-# Data class for Keyframe
-@dataclass
+# Keyframe mapping
 class Keyframe(TypedDict):
     uuid: str
     id: Optional[int] = None
@@ -16,14 +15,12 @@ class Keyframe(TypedDict):
     updated_at: Optional[str] = None
 
 
-# Data class for KeyframeResponseWrapper
-@dataclass
+# Keyframe response mapping
 class KeyframeResponseWrapper(TypedDict):
     keyframe: Optional[Keyframe]
 
 
-# Data class for UpdateKeyframeRequest
-@dataclass
+# Update keyframe request mapping
 class UpdateKeyframeRequest(TypedDict):
     name: Optional[str] = None
     displayedOwner: Optional[int] = None

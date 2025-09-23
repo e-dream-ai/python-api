@@ -15,8 +15,7 @@ class FileType(str, Enum):
         return self.value
 
 
-# Data class for CreateMultipartUploadFormValues
-@dataclass
+# Create multipart upload form values mapping
 class CreateMultipartUploadFormValues(TypedDict):
     uuid: Optional[str] = None
     name: Optional[str] = None
@@ -27,8 +26,7 @@ class CreateMultipartUploadFormValues(TypedDict):
     processed: Optional[bool] = None
 
 
-# Data class for CreateDreamFileMultipartUploadFormValues
-@dataclass
+# Create dream file multipart upload form values mapping
 class CreateDreamFileMultipartUploadFormValues(TypedDict):
     type: DreamFileType
     name: Optional[str] = None
@@ -38,31 +36,27 @@ class CreateDreamFileMultipartUploadFormValues(TypedDict):
     processed: Optional[bool] = None
 
 
-# Data class for MultipartUpload
-@dataclass
+# Multipart upload mapping
 class MultipartUpload(TypedDict):
     urls: List[str]
     uploadId: str
     dream: Optional[Dream]
 
 
-# Data class for MultipartUploadRequest
-@dataclass
+# Multipart upload request mapping
 class MultipartUploadRequest(TypedDict):
     presignedUrl: str
     dream: Optional[Dream]
     uploadId: str
 
 
-# Data class for CompletedPart
-@dataclass
+# Completed part mapping
 class CompletedPart(TypedDict):
     ETag: str
     PartNumber: int
 
 
-# Data class for RefreshMultipartUploadUrlFormValues
-@dataclass
+# Refresh multipart upload URL form values mapping
 class RefreshMultipartUploadUrlFormValues(TypedDict):
     type: DreamFileType
     uploadId: str
@@ -72,8 +66,7 @@ class RefreshMultipartUploadUrlFormValues(TypedDict):
     processed: Optional[bool] = None
 
 
-# Data class for CompleteMultipartUploadFormValues
-@dataclass
+# Complete multipart upload form values mapping
 class CompleteMultipartUploadFormValues(TypedDict):
     type: DreamFileType
     uploadId: str
@@ -84,8 +77,7 @@ class CompleteMultipartUploadFormValues(TypedDict):
     processed: Optional[bool] = None
 
 
-# Data class for CompleteMultipartUploadFormValues
-@dataclass
+# Upload file options mapping
 class UploadFileOptions(TypedDict):
     uuid: Optional[str] = None
     processed: Optional[bool] = None
@@ -94,15 +86,13 @@ class UploadFileOptions(TypedDict):
     nsfw: Optional[bool] = None  # Specific to DREAM
 
 
-# Data class for CompleteMultipartUploadFormValues
-@dataclass
+# Refresh multipart upload mapping
 class RefreshMultipartUpload(TypedDict):
     url: str
     dream: Dream
     uploadId: str
 
 
-# Data class for CompleteFileResponseWrapper
-@dataclass
+# Complete file response wrapper mapping
 class CompleteFileResponseWrapper(TypedDict):
     dream: Optional[Dream]

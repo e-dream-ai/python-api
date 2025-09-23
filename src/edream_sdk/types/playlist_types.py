@@ -13,8 +13,7 @@ class PlaylistItemType(Enum):
     NONE = "none"
 
 
-# Data class for PlaylistItem
-@dataclass
+# Playlist item mapping
 class PlaylistItem(TypedDict):
     id: int
     type: str
@@ -27,8 +26,7 @@ class PlaylistItem(TypedDict):
     deleted_at: Optional[str] = None
 
 
-# Data class for PlaylistKeyframe
-@dataclass
+# Playlist keyframe mapping
 class PlaylistKeyframe(TypedDict):
     id: int
     order: Optional[int] = None
@@ -39,14 +37,12 @@ class PlaylistKeyframe(TypedDict):
     deleted_at: Optional[str] = None
 
 
-# Data class for Playlist
-@dataclass
+# Playlist keyframe response mapping
 class PlaylistKeyframeResponseWrapper(TypedDict):
     playlistKeyframe: Optional[PlaylistKeyframe]
 
 
-# Data class for Playlist
-@dataclass
+# Playlist mapping
 class Playlist(TypedDict):
     id: int
     uuid: str
@@ -72,22 +68,19 @@ class Playlist(TypedDict):
         return [pk.keyframe for pk in self.playlistKeyframes]
 
 
-# Data class for Playlist response
-@dataclass
+# Playlist response mapping
 class PlaylistResponseWrapper(TypedDict):
     playlist: Optional[Playlist]
 
 
-# Data class for CreatePlaylistRequest
-@dataclass
+# Create playlist request mapping
 class CreatePlaylistRequest(TypedDict):
     name: str
     description: Optional[str] = None
     nsfw: Optional[bool] = None
 
 
-# Data class for UpdatePlaylistRequest
-@dataclass
+# Update playlist request mapping
 class UpdatePlaylistRequest(TypedDict):
     name: Optional[str] = None
     featureRank: Optional[int] = None
@@ -96,8 +89,7 @@ class UpdatePlaylistRequest(TypedDict):
     description: Optional[str] = None
 
 
-# Data class for PlaylistItem response
-@dataclass
+# Playlist item response mapping
 class PlaylistItemResponseWrapper(TypedDict):
     playlistItem: Optional[PlaylistItem]
 

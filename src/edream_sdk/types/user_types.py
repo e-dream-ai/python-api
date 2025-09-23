@@ -22,15 +22,11 @@ class Token:
     TokenType: str
 
 
-# Data class for Role
-@dataclass
 class Role(TypedDict):
     id: int
     name: RoleType
 
 
-# Data class for User
-@dataclass
 class User(TypedDict):
     id: int
     uuid: str
@@ -50,6 +46,5 @@ class User(TypedDict):
     last_login_at: Optional[str] = None
 
 
-@dataclass
 class UserResponseWrapper(TypedDict):
     user: Optional[User]

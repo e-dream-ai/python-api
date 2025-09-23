@@ -25,8 +25,7 @@ class DreamFileType:
         return self.value
 
 
-# Data class for Dream
-@dataclass
+# Dream mapping
 class Dream(TypedDict):
     id: int
     uuid: str
@@ -60,39 +59,34 @@ class Dream(TypedDict):
     deleted_at: Optional[str] = None
 
 
-# Data class for PresignedPost
-@dataclass
+# Presigned post mapping
 class PresignedPost(TypedDict):
     url: str
     uuid: str
     fields: Dict[str, str]
 
 
-# Data class for PresignedPostRequest
-@dataclass
+# Presigned post request mapping
 class PresignedPostRequest(TypedDict):
     params: Optional[PresignedPost] = None
     file: Optional[ByteString] = None
 
 
-# Data class for MultipartUpload
-@dataclass
+# Multipart upload mapping
 class MultipartUpload(TypedDict):
     urls: Optional[List[str]] = None
     dream: Optional[Dream] = None
     uploadId: Optional[str] = None
 
 
-# Data class for RefreshMultipartUpload
-@dataclass
+# Refresh multipart upload mapping
 class RefreshMultipartUpload(TypedDict):
     url: Optional[str] = None
     dream: Optional[Dream] = None
     uploadId: Optional[str] = None
 
 
-# Data class for MultipartUploadRequest
-@dataclass
+# Multipart upload request mapping
 class MultipartUploadRequest(TypedDict):
     presignedUrl: str
     filePart: ByteString
@@ -100,20 +94,17 @@ class MultipartUploadRequest(TypedDict):
     totalParts: int
 
 
-# Data class for DreamResponseWrapper
-@dataclass
+# Dream response wrapper mapping
 class DreamResponseWrapper(TypedDict):
     dream: Optional[Dream]
 
 
-# Data class for DreamVoteResponseWrapper
-@dataclass
+# Dream vote response wrapper mapping
 class DreamVoteResponseWrapper(TypedDict):
     vote: Optional[Vote]
 
 
-# Data class for UpdateDreamRequest
-@dataclass
+# Update dream request mapping
 class UpdateDreamRequest(TypedDict):
     name: Optional[str] = None
     video: Optional[str] = None
@@ -125,8 +116,7 @@ class UpdateDreamRequest(TypedDict):
     endKeyframe: Optional[str] = None
 
 
-# Data class for SetDreamProcessedRequest
-@dataclass
+# Set dream processed request mapping
 class SetDreamProcessedRequest(TypedDict):
     processedVideoSize: Optional[int] = None
     processedVideoFrames: Optional[int] = None

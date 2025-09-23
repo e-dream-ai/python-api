@@ -1,7 +1,8 @@
-from typing import Optional, TypedDict
+from typing import Optional, TypedDict, Generic, TypeVar
 
+T = TypeVar('T')
 
-class ApiResponse[T](TypedDict):
-    success: Optional[bool] = None
-    message: Optional[str] = None
-    data: Optional[T] = None
+class ApiResponse(TypedDict, Generic[T]):
+    success: Optional[bool]
+    message: Optional[str] 
+    data: Optional[T]

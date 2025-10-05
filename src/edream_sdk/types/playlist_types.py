@@ -61,7 +61,6 @@ class Playlist(TypedDict):
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
     totalDurationSeconds: Optional[int] = None
-    totalDurationFormatted: Optional[str] = None
 
     @property
     def keyframes(self) -> Optional[List[Keyframe]]:

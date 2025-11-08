@@ -114,6 +114,7 @@ class UpdateDreamRequest(TypedDict):
     displayedOwner: Optional[int] = None
     startKeyframe: Optional[str] = None
     endKeyframe: Optional[str] = None
+    description: Optional[str] = None
 
 
 # Set dream processed request mapping

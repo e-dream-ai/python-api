@@ -122,8 +122,11 @@ class FileClient:
         # Add type-specific fields to payload
         if type == FileType.DREAM:
             # dream name, needed only on FileType.DREAM type
-            file_name = path.stem
-            dream_name = file_name if type == FileType.DREAM else None
+            dream_name = None
+            if options and options.get("name"):
+                dream_name = options.get("name")
+            else:
+                dream_name = path.stem
 
             payload.update(
                 {
@@ -244,8 +247,11 @@ class FileClient:
         # Add optional fields based on file type
         if type == FileType.DREAM:
             # dream name, needed only on FileType.DREAM type
-            file_name = path.stem
-            dream_name = file_name if type == FileType.DREAM else None
+            dream_name = None
+            if options and options.get("name"):
+                dream_name = options.get("name")
+            else:
+                dream_name = path.stem
             payload.update(
                 {
                     "name": dream_name,

@@ -108,16 +108,23 @@ class PlaylistClient:
         playlistItem = response_data["playlistItem"]
         return playlistItem
 
-    def add_file_to_playlist(self, uuid: str, file_path: str) -> Optional[Dream]:
+    def add_file_to_playlist(self, uuid: str, file_path: str, name: Optional[str] = None) -> Optional[Dream]:
         """
         Adds a file to a playlist creating a dream
         Args:
             uuid (str): playlist uuid
             file_path (str): video file path
+            name (Optional[str]): optional dream name (defaults to filename)
         Returns:
             Optional[Dream]: Created Dream
         """
-        dream = self.file_client.upload_file(file_path, type=DreamFileType.DREAM)
+        from ..types.file_upload_types import UploadFileOptions
+        
+        options = None
+        if name:
+            options = UploadFileOptions(name=name)
+        
+        dream = self.file_client.upload_file(file_path, type=DreamFileType.DREAM, options=options)
         self.add_item_to_playlist(
             playlist_uuid=uuid, type=PlaylistItemType.DREAM, item_uuid=dream["uuid"]
         )

@@ -118,13 +118,13 @@ class PlaylistClient:
         Returns:
             Optional[Dream]: Created Dream
         """
-        from ..types.file_upload_types import UploadFileOptions
-        
         options = None
         if name:
-            options = UploadFileOptions(name=name)
+            options = {"name": name}
         
         dream = self.file_client.upload_file(file_path, type=DreamFileType.DREAM, options=options)
+        if not dream or "uuid" not in dream:
+            raise Exception(f"Failed to create dream: upload_file returned invalid dream object")
         self.add_item_to_playlist(
             playlist_uuid=uuid, type=PlaylistItemType.DREAM, item_uuid=dream["uuid"]
         )

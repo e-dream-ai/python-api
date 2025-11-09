@@ -533,7 +533,7 @@ class FileClient:
         total_parts = calculate_total_parts(file_size)
 
         # Extract options
-        uuid = options["uuid"] if options else None
+        uuid = options.get("uuid") if options else None
 
         # Create multipart upload
         create_upload_endpoint = self._get_create_upload_endpoint(type, uuid)

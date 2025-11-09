@@ -556,6 +556,10 @@ class FileClient:
             and multipart_upload is not None
             and (dream := multipart_upload.get("dream")) is not None
         ):
+            if not isinstance(dream, dict):
+                raise Exception(f"Multipart upload dream is not a dict. Type: {type(dream)}, Value: {dream}")
+            if "uuid" not in dream:
+                raise Exception(f"Multipart upload dream object missing 'uuid' key. Dream: {dream}, MultipartUpload: {multipart_upload}")
             uuid = dream["uuid"]
 
         upload_id = multipart_upload["uploadId"]

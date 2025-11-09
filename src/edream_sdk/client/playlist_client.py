@@ -123,8 +123,12 @@ class PlaylistClient:
             options = {"name": name}
         
         dream = self.file_client.upload_file(file_path, type=DreamFileType.DREAM, options=options)
-        if not dream or "uuid" not in dream:
-            raise Exception(f"Failed to create dream: upload_file returned invalid dream object")
+        if not dream:
+            raise Exception(f"Failed to create dream: upload_file returned None")
+        if not isinstance(dream, dict):
+            raise Exception(f"Failed to create dream: upload_file returned non-dict type: {type(dream)}")
+        if "uuid" not in dream:
+            raise Exception(f"Failed to create dream: dream object missing 'uuid' key. Dream object: {dream}")
         self.add_item_to_playlist(
             playlist_uuid=uuid, type=PlaylistItemType.DREAM, item_uuid=dream["uuid"]
         )

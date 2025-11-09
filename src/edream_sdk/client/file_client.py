@@ -609,6 +609,15 @@ class FileClient:
 
         print("Upload completed.")
         if type in [FileType.DREAM, FileType.FILMSTRIP, FileType.THUMBNAIL]:
-            return completed_upload["dream"]
+            if "dream" not in completed_upload:
+                raise Exception(f"Upload completed but response missing 'dream' key. Response: {completed_upload}")
+            dream = completed_upload.get("dream")
+            if not dream:
+                raise Exception(f"Upload completed but dream object is None in response. Response: {completed_upload}")
+            if not isinstance(dream, dict):
+                raise Exception(f"Upload completed but dream is not a dict. Type: {type(dream)}, Value: {dream}")
+            if "uuid" not in dream:
+                raise Exception(f"Upload completed but dream object missing 'uuid' key. Dream: {dream}")
+            return dream
 
         return True

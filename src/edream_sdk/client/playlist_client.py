@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from dataclasses import asdict
 from ..client.api_client import ApiClient
 from ..client.file_client import FileClient
@@ -108,19 +108,30 @@ class PlaylistClient:
         playlistItem = response_data["playlistItem"]
         return playlistItem
 
-    def add_file_to_playlist(self, uuid: str, file_path: str, name: Optional[str] = None) -> Optional[Dream]:
+    def add_file_to_playlist(
+        self, 
+        uuid: str, 
+        file_path: str, 
+        name: Optional[str] = None,
+        progress_callback: Optional[Any] = None,
+        progress_interval: float = 1.0
+    ) -> Optional[Dream]:
         """
         Adds a file to a playlist creating a dream
         Args:
             uuid (str): playlist uuid
             file_path (str): video file path
             name (Optional[str]): optional dream name (defaults to filename)
+            progress_callback (Optional[Callable]): optional progress callback function
+            progress_interval (float): interval in seconds between progress updates (default 1.0)
         Returns:
             Optional[Dream]: Created Dream
         """
-        options = None
-        if name:
-            options = {"name": name}
+        options = {"name": name} if name else {}
+        if progress_callback:
+            options["progress_callback"] = progress_callback
+        if progress_interval:
+            options["progress_interval"] = progress_interval
         
         dream = self.file_client.upload_file(file_path, type=DreamFileType.DREAM, options=options)
         if not dream:

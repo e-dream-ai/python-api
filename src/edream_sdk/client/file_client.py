@@ -22,6 +22,8 @@ from ..types.types import T
 
 # FILE PART SIZE
 PART_SIZE = 1024 * 1024 * 200  # 200 MB
+# PROGRESS CHUNK SIZE (for progress reporting)
+PROGRESS_CHUNK_SIZE = 1024 * 1024  # 1 MB
 # UPLOAD PART MAX RETRIES
 MAX_RETRIES = 3
 # DOWNLOAD_CHUNCK_SIZE = 20 MB
@@ -575,13 +577,44 @@ class FileClient:
         bytes_uploaded = 0
         last_progress_time = time.time()
 
+        if progress_callback:
+            try:
+                progress_callback(0, file_size, 0.0)
+            except Exception as e:
+                print(f"Warning: Progress callback error: {e}")
+
         with open(file_path, "rb") as file:
             # iterates urls to upload each part and obtaining each etag
             for index, url in enumerate(urls):
                 part_number = index + 1
-                part_data = file.read(PART_SIZE)
+                part_data = bytearray()
+                
 
-                # exit the loop if read all the data
+                while len(part_data) < PART_SIZE:
+                    chunk = file.read(PROGRESS_CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    part_data.extend(chunk)
+                    bytes_uploaded += len(chunk)
+                    
+                    current_time = time.time()
+                    time_since_last_report = current_time - last_progress_time
+                    if progress_callback and time_since_last_report >= progress_interval:
+                        progress_percentage = (bytes_uploaded / file_size) * 100
+                        try:
+                            progress_callback(bytes_uploaded, file_size, progress_percentage)
+                        except Exception as e:
+                            print(f"Warning: Progress callback error: {e}")
+                        last_progress_time = current_time
+                    
+                    # Stop if we've read all the file
+                    if bytes_uploaded >= file_size:
+                        break
+                
+                # Convert to bytes for upload
+                part_data = bytes(part_data)
+                
+                # exit the loop if no data to upload
                 if not part_data:
                     break
 
@@ -597,16 +630,20 @@ class FileClient:
                     options=options,
                 )
                 completed_parts.append({"ETag": etag, "PartNumber": part_number})
-                bytes_uploaded += len(part_data)
                 
+                # Report progress after part upload completes (if not already reported)
                 current_time = time.time()
-                if progress_callback and (current_time - last_progress_time >= progress_interval):
-                    progress_percentage = (bytes_uploaded / file_size) * 100
-                    try:
-                        progress_callback(bytes_uploaded, file_size, progress_percentage)
-                    except Exception as e:
-                        print(f"Warning: Progress callback error: {e}")
-                    last_progress_time = current_time
+                time_since_last_report = current_time - last_progress_time
+                if progress_callback:
+                    # Report if interval elapsed or if this is the final part
+                    should_report = (time_since_last_report >= progress_interval) or (bytes_uploaded >= file_size)
+                    if should_report:
+                        progress_percentage = (bytes_uploaded / file_size) * 100
+                        try:
+                            progress_callback(bytes_uploaded, file_size, progress_percentage)
+                        except Exception as e:
+                            print(f"Warning: Progress callback error: {e}")
+                        last_progress_time = current_time
 
         # Build the payload
         complete_upload_endpoint = self._get_complete_upload_endpoint(type, uuid)

@@ -1,6 +1,7 @@
 import os
 import requests
 import math
+import time
 from ..client.api_client import ApiClient
 from typing import Optional, List, Dict, Any, Union
 from dataclasses import asdict, is_dataclass
@@ -380,9 +381,22 @@ class FileClient:
             # print(f"An error occurred: {e}")
             return None
 
-    def download_file(self, url: str, file_path: Optional[str] = None) -> bool:
+    def download_file(
+        self, 
+        url: str, 
+        file_path: Optional[str] = None,
+        progress_callback: Optional[Any] = None,
+        progress_interval: float = 1.0
+    ) -> bool:
         """
         Downloads a file from a url to a path
+        Args:
+            url (str): URL to download from
+            file_path (Optional[str]): Path to save file to (defaults to basename of URL)
+            progress_callback (Optional[Callable]): Optional callback function for progress updates
+            progress_interval (float): Interval in seconds between progress updates
+        Returns:
+            bool: True if download successful, False otherwise
         """
         if file_path is None:
             # Default to basename of URL if no path is provided
@@ -392,21 +406,17 @@ class FileClient:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         try:
-            print(f"Downloading from URL: {url}")
-
             response = requests.get(url, stream=True)
-            print(f"GET request status code: {response.status_code}")
             
             # Raise an error for bad status codes
             response.raise_for_status()
 
             # Try to get file size from response headers
             file_size = int(response.headers.get("content-length", 0))
-            if file_size > 0:
-                print(f"Expected file size: {file_size} bytes")
 
             # In progress bytes downloaded
             bytes_downloaded = 0
+            last_progress_time = time.time()
 
             # Write the content to a file
             with open(file_path, "wb") as file:
@@ -416,39 +426,31 @@ class FileClient:
                         bytes_downloaded += len(chunk)
 
                     if file_size > 0:
-                        progress_percentage = (bytes_downloaded / file_size) * 100
-                        print(f"Download progress: {progress_percentage:.2f}%")
+                        current_time = time.time()
+                        if progress_callback and (current_time - last_progress_time >= progress_interval):
+                            progress_percentage = (bytes_downloaded / file_size) * 100
+                            try:
+                                progress_callback(bytes_downloaded, file_size, progress_percentage)
+                            except Exception as e:
+                                print(f"Warning: Progress callback error: {e}")
+                            last_progress_time = current_time
 
-            print(f"Download completed successfully. Total bytes: {bytes_downloaded}")
+            if progress_callback and file_size > 0:
+                try:
+                    progress_callback(file_size, file_size, 100.0)
+                except Exception as e:
+                    print(f"Warning: Progress callback error: {e}")
             
             # Verify the file was created and has content
             if os.path.exists(file_path):
                 actual_size = os.path.getsize(file_path)
-                print(f"File saved with size: {actual_size} bytes")
                 return actual_size > 0
             else:
-                print("ERROR: File was not created")
                 return False
 
-        except requests.exceptions.HTTPError as http_err:
-            print(f"HTTP error occurred: {http_err}")
-            print(f"Response status code: {http_err.response.status_code}")
-            if hasattr(http_err.response, 'headers'):
-                print(f"Response headers: {dict(http_err.response.headers)}")
-            if hasattr(http_err.response, 'content') and http_err.response.content:
-                print(f"Response content: {http_err.response.content[:500]}")
+        except requests.exceptions.RequestException:
             return False
-        except requests.exceptions.ConnectionError as conn_err:
-            print(f"Connection error occurred: {conn_err}")
-            return False
-        except requests.exceptions.Timeout as timeout_err:
-            print(f"Timeout error occurred: {timeout_err}")
-            return False
-        except requests.exceptions.RequestException as req_err:
-            print(f"Request error occurred: {req_err}")
-            return False
-        except Exception as e:
-            print(f"Unexpected error occurred: {e}")
+        except Exception:
             return False
 
     def _upload_file_part(
@@ -566,8 +568,12 @@ class FileClient:
         urls = multipart_upload["urls"]
         completed_parts: List[CompletedPart] = []
 
+        progress_callback = options.get("progress_callback") if options else None
+        progress_interval = options.get("progress_interval", 1.0) if options else 1.0
+
         # in progreess bytes uploaded
         bytes_uploaded = 0
+        last_progress_time = time.time()
 
         with open(file_path, "rb") as file:
             # iterates urls to upload each part and obtaining each etag
@@ -592,8 +598,15 @@ class FileClient:
                 )
                 completed_parts.append({"ETag": etag, "PartNumber": part_number})
                 bytes_uploaded += len(part_data)
-                progress_percentage = (bytes_uploaded / file_size) * 100
-                print(f"Upload progress: {progress_percentage:.2f}%")
+                
+                current_time = time.time()
+                if progress_callback and (current_time - last_progress_time >= progress_interval):
+                    progress_percentage = (bytes_uploaded / file_size) * 100
+                    try:
+                        progress_callback(bytes_uploaded, file_size, progress_percentage)
+                    except Exception as e:
+                        print(f"Warning: Progress callback error: {e}")
+                    last_progress_time = current_time
 
         # Build the payload
         complete_upload_endpoint = self._get_complete_upload_endpoint(type, uuid)
@@ -611,7 +624,11 @@ class FileClient:
             endpoint=complete_upload_endpoint, request_data=complete_payload
         )
 
-        print("Upload completed.")
+        if progress_callback:
+            try:
+                progress_callback(file_size, file_size, 100.0)
+            except Exception as e:
+                print(f"Warning: Progress callback error: {e}")
         if type in [FileType.DREAM, FileType.FILMSTRIP, FileType.THUMBNAIL]:
             if "dream" not in completed_upload:
                 raise Exception(f"Upload completed but response missing 'dream' key. Response: {completed_upload}")

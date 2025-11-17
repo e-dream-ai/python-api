@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, List, TypedDict
+from typing import Optional, List, TypedDict, Callable
 from .dream_types import Dream, DreamFileType
 
 
@@ -77,6 +77,9 @@ class CompleteMultipartUploadFormValues(TypedDict):
     processed: Optional[bool] = None
 
 
+ProgressCallback = Callable[[int, int, float], None]
+
+
 # Upload file options mapping
 class UploadFileOptions(TypedDict):
     uuid: Optional[str] = None
@@ -84,6 +87,8 @@ class UploadFileOptions(TypedDict):
     frame_number: Optional[int] = None  # Specific to FILMSTRIP
     name: Optional[str] = None  # Specific to DREAM
     nsfw: Optional[bool] = None  # Specific to DREAM
+    progress_callback: Optional[ProgressCallback] = None  # Optional progress callback
+    progress_interval: Optional[float] = None  # Interval in seconds between progress updates (default 1.0)
 
 
 # Refresh multipart upload mapping

@@ -597,11 +597,18 @@ class FileClient:
         # in progreess bytes uploaded
         bytes_uploaded = 0
 
+        if progress_callback:
+            try:
+                progress_callback(0, file_size, 0.0)
+            except Exception as e:
+                print(f"Warning: Progress callback error: {e}")
+
         with open(file_path, "rb") as file:
             # iterates urls to upload each part and obtaining each etag
             for index, url in enumerate(urls):
                 part_number = index + 1
-                part_data = file.read(PART_SIZE)
+                part_data = bytearray()
+                
 
                 if not part_data:
                     break

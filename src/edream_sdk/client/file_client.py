@@ -2,6 +2,7 @@ import os
 import requests
 import math
 import time
+import io
 from ..client.api_client import ApiClient
 from typing import Optional, List, Dict, Any, Union
 from dataclasses import asdict, is_dataclass
@@ -20,14 +21,33 @@ from ..types.file_upload_types import (
 from ..types.dream_types import Dream
 from ..types.types import T
 
-# FILE PART SIZE
-PART_SIZE = 1024 * 1024 * 200  # 200 MB
-# PROGRESS CHUNK SIZE (for progress reporting)
-PROGRESS_CHUNK_SIZE = 1024 * 1024  # 1 MB
-# UPLOAD PART MAX RETRIES
+PART_SIZE = 1024 * 1024 * 200
 MAX_RETRIES = 3
-# DOWNLOAD_CHUNCK_SIZE = 20 MB
 DOWNLOAD_CHUNCK_SIZE = 20 * 1024 * 1024
+
+
+class ProgressTracker(io.BytesIO):
+    def __init__(self, data, callback, interval, base_uploaded, total_size):
+        super().__init__(data)
+        self.callback = callback
+        self.interval = interval
+        self.base_uploaded = base_uploaded
+        self.total_size = total_size
+        self.last_report = time.time()
+        
+    def read(self, size=-1):
+        chunk = super().read(size)
+        if self.callback and self.total_size > 0:
+            current_time = time.time()
+            if current_time - self.last_report >= self.interval:
+                uploaded = self.base_uploaded + self.tell()
+                percentage = (uploaded / self.total_size) * 100
+                try:
+                    self.callback(uploaded, self.total_size, percentage)
+                except Exception as e:
+                    print(f"Warning: Progress callback error: {e}")
+                self.last_report = current_time
+        return chunk
 
 
 def calculate_total_parts(file_size: int) -> int:
@@ -175,23 +195,12 @@ class FileClient:
         file_extension: str,
         options: UploadFileOptions,
     ) -> RefreshMultipartUploadUrlFormValues:
-        """
-        Builds the payload for the refresh multipart upload URL request.
-        Args:
-            type (FileType): The type of the file.
-            upload_id (str): The ID of the multipart upload.
-            part_number (int): The part number being refreshed.
-            file_extension (str): The file extension (e.g., "mp4").
-            options (UploadFileOptions): Options for the upload.
-        Returns:
-            Dict[str, Any]: The payload for the refresh multipart upload URL request.
-        """
-        # Base payload
         payload: RefreshMultipartUploadUrlFormValues = {
             "type": type,
             "uploadId": upload_id,
             "part": part_number,
             "extension": file_extension,
+            "parts": 1,
         }
 
         # Add optional fields based on file type
@@ -357,30 +366,29 @@ class FileClient:
         presigned_url: str,
         file_part: bytes,
         file_type: Optional[str] = None,
+        progress_callback: Optional[Any] = None,
+        progress_interval: float = 1.0,
+        base_bytes_uploaded: int = 0,
+        total_file_size: int = 0,
     ) -> Optional[str]:
-        """
-        Upload file request to s3 using `requests`
-        Args:
-            presigned_url (str): presigned s3 url
-            file_part (bytes): file part bytes
-            file_type (str): file type
-        Returns:
-            Optional[str]: etag str
-        """
         headers = {"Content-Type": file_type or ""}
+        
         try:
+            if progress_callback and total_file_size > 0:
+                data = ProgressTracker(file_part, progress_callback, progress_interval, base_bytes_uploaded, total_file_size)
+            else:
+                data = file_part
+                
             response = requests.put(
                 presigned_url,
-                data=file_part,
+                data=data,
                 headers=headers,
             )
             response.raise_for_status()
-            # Extract and clean the ETag header
             etag = response.headers.get("etag", "")
             cleaned_etag = etag.strip('"')
             return cleaned_etag
         except requests.exceptions.RequestException as e:
-            # print(f"An error occurred: {e}")
             return None
 
     def download_file(
@@ -465,6 +473,10 @@ class FileClient:
         file_part: bytes,
         file_type: Optional[str] = None,
         options: Optional[UploadFileOptions] = None,
+        progress_callback: Optional[Any] = None,
+        progress_interval: float = 1.0,
+        base_bytes_uploaded: int = 0,
+        total_file_size: int = 0,
     ) -> Optional[str]:
         """
         Refreshes multipart upload part
@@ -475,6 +487,10 @@ class FileClient:
             part_number (int): part number
             file_part (bytes): file part bytes
             file_type (str): file type
+            progress_callback: callback for progress updates
+            progress_interval: interval in seconds between progress updates
+            base_bytes_uploaded: bytes already uploaded before this part
+            total_file_size: total size of the file being uploaded
         Returns:
             str: etag str
         """
@@ -482,7 +498,13 @@ class FileClient:
         url = presigned_url
         while attempt < MAX_RETRIES:
             result = self._upload_file_request(
-                presigned_url=url, file_part=file_part, file_type=file_type
+                presigned_url=url, 
+                file_part=file_part, 
+                file_type=file_type,
+                progress_callback=progress_callback,
+                progress_interval=progress_interval,
+                base_bytes_uploaded=base_bytes_uploaded,
+                total_file_size=total_file_size,
             )
             if result is not None:
                 return result
@@ -502,10 +524,9 @@ class FileClient:
                     refresh_result = self._refresh_multipart_upload(
                         endpoint=refresh_upload_endpoint, request_data=refresh_payload
                     )
-                    new_url = refresh_result["url"]
-                    url = new_url
+                    url = refresh_result["urls"][0]
                 else:
-                    raise f"Upload failed. Max retries reached on part {file_part}"
+                    raise Exception(f"Upload failed. Max retries reached on part {part_number}")
 
     def upload_file(
         self,
@@ -575,46 +596,13 @@ class FileClient:
 
         # in progreess bytes uploaded
         bytes_uploaded = 0
-        last_progress_time = time.time()
-
-        if progress_callback:
-            try:
-                progress_callback(0, file_size, 0.0)
-            except Exception as e:
-                print(f"Warning: Progress callback error: {e}")
 
         with open(file_path, "rb") as file:
             # iterates urls to upload each part and obtaining each etag
             for index, url in enumerate(urls):
                 part_number = index + 1
-                part_data = bytearray()
-                
+                part_data = file.read(PART_SIZE)
 
-                while len(part_data) < PART_SIZE:
-                    chunk = file.read(PROGRESS_CHUNK_SIZE)
-                    if not chunk:
-                        break
-                    part_data.extend(chunk)
-                    bytes_uploaded += len(chunk)
-                    
-                    current_time = time.time()
-                    time_since_last_report = current_time - last_progress_time
-                    if progress_callback and time_since_last_report >= progress_interval:
-                        progress_percentage = (bytes_uploaded / file_size) * 100
-                        try:
-                            progress_callback(bytes_uploaded, file_size, progress_percentage)
-                        except Exception as e:
-                            print(f"Warning: Progress callback error: {e}")
-                        last_progress_time = current_time
-                    
-                    # Stop if we've read all the file
-                    if bytes_uploaded >= file_size:
-                        break
-                
-                # Convert to bytes for upload
-                part_data = bytes(part_data)
-                
-                # exit the loop if no data to upload
                 if not part_data:
                     break
 
@@ -628,22 +616,13 @@ class FileClient:
                     file_part=part_data,
                     file_type=file_extension,
                     options=options,
+                    progress_callback=progress_callback,
+                    progress_interval=progress_interval,
+                    base_bytes_uploaded=bytes_uploaded,
+                    total_file_size=file_size,
                 )
                 completed_parts.append({"ETag": etag, "PartNumber": part_number})
-                
-                # Report progress after part upload completes (if not already reported)
-                current_time = time.time()
-                time_since_last_report = current_time - last_progress_time
-                if progress_callback:
-                    # Report if interval elapsed or if this is the final part
-                    should_report = (time_since_last_report >= progress_interval) or (bytes_uploaded >= file_size)
-                    if should_report:
-                        progress_percentage = (bytes_uploaded / file_size) * 100
-                        try:
-                            progress_callback(bytes_uploaded, file_size, progress_percentage)
-                        except Exception as e:
-                            print(f"Warning: Progress callback error: {e}")
-                        last_progress_time = current_time
+                bytes_uploaded += len(part_data)
 
         # Build the payload
         complete_upload_endpoint = self._get_complete_upload_endpoint(type, uuid)

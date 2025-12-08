@@ -51,6 +51,7 @@ class Dream(TypedDict):
     description: Optional[str] = None
     ccbyLicense: Optional[bool] = None
     md5: Optional[str] = None
+    prompt: Optional[Dict] = None
     startKeyframe: Optional[Keyframe] = None
     endKeyframe: Optional[Keyframe] = None
     processed_at: Optional[str] = None
@@ -115,6 +116,18 @@ class UpdateDreamRequest(TypedDict):
     startKeyframe: Optional[str] = None
     endKeyframe: Optional[str] = None
     description: Optional[str] = None
+    prompt: Optional[Dict] = None
+
+
+# Create dream from prompt request mapping
+class CreateDreamFromPromptRequest(TypedDict):
+    name: str
+    prompt: Dict
+    description: Optional[str] = None
+    sourceUrl: Optional[str] = None
+    nsfw: Optional[bool] = None
+    hidden: Optional[bool] = None
+    ccbyLicense: Optional[bool] = None
 
 
 # Set dream processed request mapping

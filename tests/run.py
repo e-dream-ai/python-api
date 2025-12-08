@@ -8,6 +8,7 @@ from edream_sdk.types.playlist_types import CreatePlaylistRequest, PlaylistItemT
 from edream_sdk.types.dream_types import (
     UpdateDreamRequest,
     DreamFileType,
+    CreateDreamFromPromptRequest,
 )
 from edream_sdk.types.keyframe_types import (
     UpdateKeyframeRequest,
@@ -59,6 +60,80 @@ def run():
     # edream_client.upvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
 
     # edream_client.delete_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+
+    """
+    Create dream from prompt (generative algorithms)
+    """
+    
+    # Example 1: Create dream with Animatediff algorithm
+    # animatediff_prompt = {
+    #     "infinidream_algorithm": "animatediff",
+    #     "prompts": {
+    #         "0": "a dog at park scene at afternoon",
+    #         "32": "a dog running through the park",
+    #         "48": "the dog chasing a ball",
+    #         "64": "the dog returns happily"
+    #     },
+    #     "pre_text": "highly detailed, 4k, masterpiece",
+    #     "app_text": "(Masterpiece, best quality:1.2) walking towards camera, full body closeup shot",
+    #     "frame_count": 32,
+    #     "frame_rate": 16,
+    #     "width": 512,
+    #     "height": 512,
+    #     "steps": 12,
+    #     "seed": 6
+    # }
+    # 
+    # dream = edream_client.create_dream_from_prompt(
+    #     CreateDreamFromPromptRequest(
+    #         name="Dog at Park - Animatediff",
+    #         prompt=animatediff_prompt,
+    #         description="Generated with Animatediff algorithm",
+    #         nsfw=False
+    #     )
+    # )
+    # print(f"Created dream with UUID: {dream['uuid']}")
+    # print(f"Dream status: {dream['status']}")
+
+    # Example 2: Create dream with Deforum algorithm
+    # deforum_prompt = {
+    #     "infinidream_algorithm": "deforum",
+    #     "0": "a fish on a bicycle",
+    #     "width": 1024,
+    #     "height": 576,
+    #     "max_frames": 600,
+    #     "fps": 16
+    # }
+    # 
+    # dream = edream_client.create_dream_from_prompt(
+    #     CreateDreamFromPromptRequest(
+    #         name="Fish on Bicycle - Deforum",
+    #         prompt=deforum_prompt,
+    #         description="Generated with Deforum algorithm"
+    #     )
+    # )
+    # print(f"Created dream with UUID: {dream['uuid']}")
+
+    # Example 3: Create dream with Uprez algorithm (upscale existing video)
+    # uprez_prompt = {
+    #     "infinidream_algorithm": "uprez",
+    #     "video_uuid": "d3f06c44-b453-4ea8-8985-fe0f97d607fe",  # UUID of existing dream
+    #     "upscale_factor": 2,
+    #     "interpolation_factor": 2,
+    #     "output_format": "mp4",
+    #     "tile_size": 1024,
+    #     "tile_padding": 10,
+    #     "quality": "high"
+    # }
+    # 
+    # dream = edream_client.create_dream_from_prompt(
+    #     CreateDreamFromPromptRequest(
+    #         name="Upscaled Dream",
+    #         prompt=uprez_prompt,
+    #         description="Upscaled version of existing dream"
+    #     )
+    # )
+    # print(f"Created dream with UUID: {dream['uuid']}")
 
     """
     Playlist functions

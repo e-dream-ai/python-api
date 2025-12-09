@@ -83,17 +83,54 @@ def run():
     #     "steps": 12,
     #     "seed": 6
     # }
-    # 
+    
+    # print("Creating dream with Animatediff algorithm...")
     # dream = edream_client.create_dream_from_prompt(
     #     CreateDreamFromPromptRequest(
     #         name="Dog at Park - Animatediff",
-    #         prompt=animatediff_prompt,
+    #         prompt=json.dumps(animatediff_prompt),
     #         description="Generated with Animatediff algorithm",
     #         nsfw=False
     #     )
     # )
-    # print(f"Created dream with UUID: {dream['uuid']}")
-    # print(f"Dream status: {dream['status']}")
+    # dream_uuid = dream['uuid']
+    # print(f"Created dream with UUID: {dream_uuid}")
+    # print(f"  Initial status: {dream['status']}")
+    # print("\nWaiting for processing...")
+    # print("(This may take 1-3 minutes for video generation + processing)\n")
+    
+    # # Poll dream status until processed
+    # max_wait_time = 300  # 5 minutes max
+    # check_interval = 10  # Check every 10 seconds
+    # start_time = time.time()
+    # last_status = dream['status']
+    
+    # while time.time() - start_time < max_wait_time:
+    #     time.sleep(check_interval)
+    #     try:
+    #         updated_dream = edream_client.get_dream(dream_uuid)
+    #         current_status = updated_dream.get('status', 'unknown')
+            
+    #         if current_status != last_status:
+    #             print(f"  Status changed: {last_status} → {current_status}")
+    #             last_status = current_status
+            
+    #         if current_status == 'processed':
+    #             print(f"\nDream processed successfully!")
+    #             print(f"  Video: {updated_dream.get('video', 'N/A')}")
+    #             print(f"  Thumbnail: {updated_dream.get('thumbnail', 'N/A')}")
+    #             print(f"  Original video: {updated_dream.get('original_video', 'N/A')}")
+    #             break
+    #         elif current_status == 'failed':
+    #             print(f"\nDream processing failed!")
+    #             break
+    #     except Exception as e:
+    #         print(f"  Error checking status: {e}")
+    #         continue
+    
+    # if time.time() - start_time >= max_wait_time:
+    #     print(f"\nTimeout reached. Check dream status manually:")
+    #     print(f"  dream = edream_client.get_dream('{dream_uuid}')")
 
     # Example 2: Create dream with Deforum algorithm
     # deforum_prompt = {

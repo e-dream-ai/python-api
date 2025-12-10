@@ -48,7 +48,7 @@ ALGORITHM_PROMPTS = {
     }
 }
 
-def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 600):
+def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 3600):
     print(f"\n{'='*60}")
     print(f"Polling dream status for: {dream_uuid}")
     print(f"{'='*60}\n")
@@ -91,7 +91,7 @@ def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 600):
     print(f"{'='*60}\n")
     return False
 
-def create_dream_from_prompt(algo: str):
+def create_dream_from_prompt(algo: str, timeout: int = 3600):
     api_key = os.getenv("API_KEY")
     if not api_key:
         print("ERROR: No API key found. Please check your .env file.")
@@ -127,7 +127,7 @@ def create_dream_from_prompt(algo: str):
         print(f"Status: {dream.get('status', 'unknown')}")
         print()
         
-        poll_dream_status(edream_client, dream_uuid)
+        poll_dream_status(edream_client, dream_uuid, max_wait_seconds=timeout)
         
     except Exception as e:
         print(f"\nERROR: Failed to create dream: {e}\n")
@@ -144,7 +144,7 @@ Available algorithms:
 
 Examples:
   python gen.py --algo animatediff
-  python gen.py --algo uprez
+  python gen.py --algo uprez --timeout 7200
         """
     )
     
@@ -155,9 +155,16 @@ Examples:
         help="Algorithm to use for generation"
     )
     
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=3600,
+        help="Maximum wait time in seconds for dream processing (default: 3600 = 1 hour)"
+    )
+    
     args = parser.parse_args()
     
-    create_dream_from_prompt(args.algo)
+    create_dream_from_prompt(args.algo, timeout=args.timeout)
 
 if __name__ == "__main__":
     main()

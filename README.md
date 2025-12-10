@@ -3,7 +3,7 @@
 copyright (c) 2025 e-dream, inc
 
 the project and application has generally been renamed from e-dream to
-infinidream.  this module, however, has not yet been renamed, but it
+infinidream. this module, however, has not yet been renamed, but it
 works fine with the current servers.
 
 ### local installation
@@ -14,7 +14,7 @@ If you need to setup locally to test or run code, follow
 ### simple example
 
 Get an API key from your profile on the server, and store it in a .env
-file.  Then connect as follows:
+file. Then connect as follows:
 
 ```python
 import os
@@ -37,8 +37,21 @@ python tests/run.py
 
 this file has an example of every API call.
 
+### AI generation
+
+Generate dreams using AI algorithms:
+
+```bash
+# Available algorithms
+python tests/gen.py --algo animatediff    # AnimateDiff
+python tests/gen.py --algo deforum        # Deforum
+python tests/gen.py --algo uprez          # Video upscaling
+```
+
+The script will create the dream, poll for completion, and display the video URL when ready.
+
 ### REST API
 
-This Python SDK just wraps the servers' REST API.  Its documentation
+This Python SDK just wraps the servers' REST API. Its documentation
 is served by swagger on
 [staging](https://e-dream-76c98b08cc5d.herokuapp.com/api/v1/api-docs).

@@ -41,6 +41,8 @@ class Dream(TypedDict):
     processedVideoSize: Optional[str] = None
     processedVideoFrames: Optional[int] = None
     processedVideoFPS: Optional[str] = None
+    processedMediaWidth: Optional[int] = None
+    processedMediaHeight: Optional[int] = None
     status: DreamStatusType = DreamStatusType.NONE
     nsfw: Optional[bool] = None
     # playlistItems: Any = None
@@ -135,6 +137,8 @@ class SetDreamProcessedRequest(TypedDict):
     processedVideoSize: Optional[int] = None
     processedVideoFrames: Optional[int] = None
     processedVideoFPS: Optional[int] = None
+    processedMediaWidth: Optional[int] = None
+    processedMediaHeight: Optional[int] = None
     activityLevel: Optional[float] = None
     filmstrip: Optional[List[str]] = None
     md5: Optional[str] = None

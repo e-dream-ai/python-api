@@ -41,6 +41,8 @@ class Dream(TypedDict):
     processedVideoSize: Optional[str] = None
     processedVideoFrames: Optional[int] = None
     processedVideoFPS: Optional[str] = None
+    processedMediaWidth: Optional[int] = None
+    processedMediaHeight: Optional[int] = None
     status: DreamStatusType = DreamStatusType.NONE
     nsfw: Optional[bool] = None
     # playlistItems: Any = None
@@ -51,6 +53,7 @@ class Dream(TypedDict):
     description: Optional[str] = None
     ccbyLicense: Optional[bool] = None
     md5: Optional[str] = None
+    prompt: Optional[Dict] = None
     startKeyframe: Optional[Keyframe] = None
     endKeyframe: Optional[Keyframe] = None
     processed_at: Optional[str] = None
@@ -115,6 +118,18 @@ class UpdateDreamRequest(TypedDict):
     startKeyframe: Optional[str] = None
     endKeyframe: Optional[str] = None
     description: Optional[str] = None
+    prompt: Optional[Dict] = None
+
+
+# Create dream from prompt request mapping
+class CreateDreamFromPromptRequest(TypedDict):
+    name: str
+    prompt: Dict
+    description: Optional[str] = None
+    sourceUrl: Optional[str] = None
+    nsfw: Optional[bool] = None
+    hidden: Optional[bool] = None
+    ccbyLicense: Optional[bool] = None
 
 
 # Set dream processed request mapping
@@ -122,6 +137,8 @@ class SetDreamProcessedRequest(TypedDict):
     processedVideoSize: Optional[int] = None
     processedVideoFrames: Optional[int] = None
     processedVideoFPS: Optional[int] = None
+    processedMediaWidth: Optional[int] = None
+    processedMediaHeight: Optional[int] = None
     activityLevel: Optional[float] = None
     filmstrip: Optional[List[str]] = None
     md5: Optional[str] = None

@@ -7,6 +7,7 @@ from ..types.dream_types import (
     DreamVoteResponseWrapper,
     UpdateDreamRequest,
     SetDreamProcessedRequest,
+    CreateDreamFromPromptRequest,
 )
 
 
@@ -129,3 +130,16 @@ class DreamClient:
         """
         response = self.api_client.delete(f"/dream/{uuid}")
         return response["success"]
+
+    def create_dream_from_prompt(self, data: CreateDreamFromPromptRequest) -> Dream:
+        """
+        Creates a dream from a prompt (without uploading a video)
+        Args:
+            data (CreateDreamFromPromptRequest): dream data including prompt
+        Returns:
+            Dream: Created dream
+        """
+        response = self.api_client.post("/dream", data)
+        data: DreamResponseWrapper = response["data"]
+        dream = data["dream"]
+        return dream

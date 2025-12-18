@@ -8,6 +8,7 @@ from ..types.dream_types import (
     UpdateDreamRequest,
     SetDreamProcessedRequest,
     CreateDreamFromPromptRequest,
+    DreamMediaType,
 )
 
 

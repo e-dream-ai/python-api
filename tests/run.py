@@ -8,7 +8,10 @@ from edream_sdk.types.playlist_types import CreatePlaylistRequest, PlaylistItemT
 from edream_sdk.types.dream_types import (
     UpdateDreamRequest,
     DreamFileType,
+    DreamMediaType,
+    CreateDreamFromPromptRequest,
 )
+from edream_sdk.utils.media_utils import detect_media_type_from_extension
 from edream_sdk.types.keyframe_types import (
     UpdateKeyframeRequest,
 )
@@ -59,6 +62,31 @@ def run():
     # edream_client.upvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
 
     # edream_client.delete_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
+
+    """
+    MediaType functions - Image Dreams
+    """
+
+    # Test 1: Upload image file with explicit mediaType (correct way to create image dream without prompt)
+    # image_dream = edream_client.upload_file(
+    #     file_path="path_to_file/image.jpg",
+    #     type=FileType.DREAM,
+    #     options={
+    #         "name": "My Image Dream",
+    #         "mediaType": DreamMediaType.IMAGE
+    #     }
+    # )
+    # print(f"Uploaded image dream: {image_dream['uuid']}")
+    # print(f"Media type: {image_dream['mediaType']}")  # Should be DreamMediaType.IMAGE
+
+    # Test 2: Upload image file without mediaType (backend will auto-detect)
+    # image_dream = edream_client.upload_file(
+    #     file_path="path_to_file/image.png",
+    #     type=FileType.DREAM,
+    #     options={"name": "Auto-detected Image Dream"}
+    # )
+    # print(f"Uploaded image dream (auto-detected): {image_dream['uuid']}")
+    # print(f"Media type: {image_dream['mediaType']}")  # Should be DreamMediaType.IMAGE (auto-detected)
 
     """
     Playlist functions

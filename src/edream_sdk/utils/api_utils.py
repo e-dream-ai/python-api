@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Type, Dict, Any, Optional
 from ..types.api_types import ApiResponse
 from ..types.vote_types import VoteType
-from ..types.dream_types import DreamStatusType
+from ..types.dream_types import DreamStatusType, DreamMediaType
 from ..types.types import T
 
 
@@ -46,7 +46,7 @@ def deserialize_api_response(
             deserialized_data = from_dict(
                 data_class=data_type,
                 data=raw_data,
-                config=enum_config(VoteType, DreamStatusType),
+                config=enum_config(VoteType, DreamStatusType, DreamMediaType),
             )
 
         except MissingValueError as e:

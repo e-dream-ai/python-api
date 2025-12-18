@@ -48,7 +48,7 @@ ALGORITHM_PROMPTS = {
     }
 }
 
-def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 3600):
+def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 10800):
     print(f"\n{'='*60}")
     print(f"Polling dream status for: {dream_uuid}")
     print(f"{'='*60}\n")
@@ -91,7 +91,7 @@ def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 3600):
     print(f"{'='*60}\n")
     return False
 
-def create_dream_from_prompt(algo: str, timeout: int = 3600):
+def create_dream_from_prompt(algo: str, timeout: int = 10800):
     api_key = os.getenv("API_KEY")
     if not api_key:
         print("ERROR: No API key found. Please check your .env file.")

@@ -48,8 +48,8 @@ ALGORITHM_PROMPTS = {
     },
     "qwen-image": {
         "infinidream_algorithm": "qwen-image",
-        "prompt": "A fashion-forward woman sitting at cobblestone street in Paris, wearing a camel trench coat and high heels, wind catching her scarf, soft golden hour light hitting her cheekbones",
-        "size": "1328*1328",
+        "prompt": "smiling cute furry creature drawn in fantastical and surreal Children's book style.  Main subject is surrounded by friends from myths of all cultures. Colors are pastel. Black background.",
+        "size": "1280*720",
         "seed": -1,
         "negative_prompt": "",
         "enable_safety_checker": True

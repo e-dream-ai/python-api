@@ -45,6 +45,27 @@ ALGORITHM_PROMPTS = {
         "tile_size": 1024,
         "tile_padding": 10,
         "quality": "high"
+    },
+    "qwen-image": {
+        "infinidream_algorithm": "qwen-image",
+        "prompt": "A fashion-forward woman sitting at cobblestone street in Paris, wearing a camel trench coat and high heels, wind catching her scarf, soft golden hour light hitting her cheekbones",
+        "size": "1328*1328",
+        "seed": -1,
+        "negative_prompt": "",
+        "enable_safety_checker": True
+    },
+    "wan-t2v": {
+        "infinidream_algorithm": "wan-t2v",
+        "prompt": "A serene morning in an ancient forest, golden sunlight filtering through tall pine trees, creating dancing light patterns on the moss-covered ground. Gentle mist drifts between the tree trunks as small particles float in the sunbeams. Camera slowly pans right revealing a small woodland stream with crystal clear water flowing over smooth stones.",
+        "size": "1280*720",
+        "duration": 5,
+        "num_inference_steps": 30,
+        "guidance": 5,
+        "seed": -1,
+        "negative_prompt": "",
+        "flow_shift": 5,
+        "enable_prompt_optimization": False,
+        "enable_safety_checker": True
     }
 }
 
@@ -145,6 +166,7 @@ Available algorithms:
 Examples:
   python gen.py --algo animatediff
   python gen.py --algo uprez --timeout 7200
+  python gen.py --algo qwen-image
         """
     )
     

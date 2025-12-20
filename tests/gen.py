@@ -66,6 +66,40 @@ ALGORITHM_PROMPTS = {
         "flow_shift": 5,
         "enable_prompt_optimization": False,
         "enable_safety_checker": True
+    },
+    "wan-i2v": {
+        "infinidream_algorithm": "wan-i2v",
+        "prompt": "an extremely cute animal in fantastical Joan Miró style. Children's book Illustration. White background. The animals are happy, they dance and wiggle with glee.",
+        "image": "6adfec90-8803-4727-98ce-ec768be9a21d",
+        "size": "1280*720",
+        "duration": 5,
+        "num_inference_steps": 30,
+        "guidance": 5,
+        "seed": -1,
+        "negative_prompt": "",
+        "flow_shift": 5,
+        "enable_prompt_optimization": False,
+        "enable_safety_checker": False
+    },
+    "wan-i2v-lora": {
+        "infinidream_algorithm": "wan-i2v-lora",
+        "prompt": "orbit 180 around an astronaut on the moon.",
+        "image": "6adfec90-8803-4727-98ce-ec768be9a21d",
+        "duration": 5,
+        "seed": -1,
+        "high_noise_loras": [
+            {
+                "path": "https://huggingface.co/ostris/wan22_i2v_14b_orbit_shot_lora/resolve/main/wan22_14b_i2v_orbit_high_noise.safetensors",
+                "scale": 1
+            }
+        ],
+        "low_noise_loras": [
+            {
+                "path": "https://huggingface.co/ostris/wan22_i2v_14b_orbit_shot_lora/resolve/main/wan22_14b_i2v_orbit_low_noise.safetensors",
+                "scale": 1
+            }
+        ],
+        "enable_safety_checker": True
     }
 }
 
@@ -167,6 +201,9 @@ Examples:
   python gen.py --algo animatediff
   python gen.py --algo uprez --timeout 7200
   python gen.py --algo qwen-image
+  python gen.py --algo wan-t2v
+  python gen.py --algo wan-i2v
+  python gen.py --algo wan-i2v-lora
         """
     )
     

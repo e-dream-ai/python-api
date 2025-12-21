@@ -69,8 +69,8 @@ ALGORITHM_PROMPTS = {
     },
     "wan-i2v": {
         "infinidream_algorithm": "wan-i2v",
-        "prompt": "an extremely cute animal in fantastical Joan Miró style. Children's book Illustration. White background. The animals are happy, they dance and wiggle with glee.",
-        "image": "6adfec90-8803-4727-98ce-ec768be9a21d",
+        "prompt": "smiling cute furry creature drawn in fantastical and surreal Children's book style.  Main subject is surrounded by friends from myths of all cultures. Colors are pastel. Black background. The creatures dance and wiggle with glee.",
+        "image": "11253978-5b15-4219-b587-bc0d9ed7741a",
         "size": "1280*720",
         "duration": 5,
         "num_inference_steps": 30,

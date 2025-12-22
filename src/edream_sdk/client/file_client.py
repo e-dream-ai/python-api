@@ -159,7 +159,7 @@ class FileClient:
                         {
                             k: v
                             for k, v in (options or {}).items()
-                            if k in ["nsfw", "processed"]
+                            if k in ["nsfw", "processed", "mediaType"]
                         }
                     ),
                 }

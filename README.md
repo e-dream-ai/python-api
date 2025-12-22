@@ -43,12 +43,16 @@ Generate dreams using AI algorithms:
 
 ```bash
 # Available algorithms
-python tests/gen.py --algo animatediff    # AnimateDiff
-python tests/gen.py --algo deforum        # Deforum
+python tests/gen.py --algo animatediff    # AnimateDiff video generation
+python tests/gen.py --algo deforum        # Deforum video generation
 python tests/gen.py --algo uprez          # Video upscaling
+python tests/gen.py --algo qwen-image     # Qwen image generation
+python tests/gen.py --algo wan-t2v         # Wan text-to-video generation
+python tests/gen.py --algo wan-i2v         # Wan image-to-video generation (uses image dream UUID)
+python tests/gen.py --algo wan-i2v-lora    # Wan image-to-video with LoRA (uses image dream UUID)
 ```
 
-The script will create the dream, poll for completion, and display the video URL when ready.
+The script will create the dream, poll for completion, and display the video/image URL when ready.
 
 ### REST API
 

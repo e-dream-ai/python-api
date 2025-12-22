@@ -1,5 +1,6 @@
 import requests
 from typing import Optional, Any, Dict
+from enum import Enum
 from ..types.api_types import ApiResponse
 
 EDREAM_USER_AGENT = "EdreamSDK"
@@ -28,6 +29,18 @@ class ApiClient:
             }
         )
 
+    def _serialize_enums(self, obj: Any) -> Any:
+        """
+        Recursively convert Enum objects to their values for JSON serialization
+        """
+        if isinstance(obj, Enum):
+            return obj.value
+        elif isinstance(obj, dict):
+            return {k: self._serialize_enums(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._serialize_enums(item) for item in obj]
+        return obj
+
     def _request(
         self,
         method: str,
@@ -38,8 +51,9 @@ class ApiClient:
         try:
             url = f"{self.backend_url}{endpoint}"
             filtered_data = {k: v for k, v in (data or {}).items() if v is not None}
+            serialized_data = self._serialize_enums(filtered_data)
             response = self.session.request(
-                method, url, params=params, json=filtered_data
+                method, url, params=params, json=serialized_data
             )
             response.raise_for_status()
             return ApiResponse(response.json())

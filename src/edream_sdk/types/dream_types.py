@@ -15,6 +15,12 @@ class DreamStatusType(Enum):
     PROCESSED = "processed"
 
 
+# Enum for DreamMediaType
+class DreamMediaType(Enum):
+    VIDEO = "video"
+    IMAGE = "image"
+
+
 # Enum for DreamFileType
 class DreamFileType:
     DREAM = "dream"
@@ -44,6 +50,7 @@ class Dream(TypedDict):
     processedMediaWidth: Optional[int] = None
     processedMediaHeight: Optional[int] = None
     status: DreamStatusType = DreamStatusType.NONE
+    mediaType: Optional[DreamMediaType] = None
     nsfw: Optional[bool] = None
     # playlistItems: Any = None
     filmstrip: Optional[List[str]] = None
@@ -119,17 +126,19 @@ class UpdateDreamRequest(TypedDict):
     endKeyframe: Optional[str] = None
     description: Optional[str] = None
     prompt: Optional[Dict] = None
+    mediaType: Optional[DreamMediaType] = None
 
 
 # Create dream from prompt request mapping
 class CreateDreamFromPromptRequest(TypedDict):
     name: str
-    prompt: Dict
+    prompt: Optional[Dict] = None
     description: Optional[str] = None
     sourceUrl: Optional[str] = None
     nsfw: Optional[bool] = None
     hidden: Optional[bool] = None
     ccbyLicense: Optional[bool] = None
+    mediaType: Optional[DreamMediaType] = None
 
 
 # Set dream processed request mapping

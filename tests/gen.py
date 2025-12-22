@@ -45,6 +45,61 @@ ALGORITHM_PROMPTS = {
         "tile_size": 1024,
         "tile_padding": 10,
         "quality": "high"
+    },
+    "qwen-image": {
+        "infinidream_algorithm": "qwen-image",
+        "prompt": "smiling cute furry creature drawn in fantastical and surreal Children's book style.  Main subject is surrounded by friends from myths of all cultures. Colors are pastel. Black background.",
+        "size": "1280*720",
+        "seed": -1,
+        "negative_prompt": "",
+        "enable_safety_checker": True
+    },
+    "wan-t2v": {
+        "infinidream_algorithm": "wan-t2v",
+        "prompt": "A serene morning in an ancient forest, golden sunlight filtering through tall pine trees, creating dancing light patterns on the moss-covered ground. Gentle mist drifts between the tree trunks as small particles float in the sunbeams. Camera slowly pans right revealing a small woodland stream with crystal clear water flowing over smooth stones.",
+        "size": "1280*720",
+        "duration": 5,
+        "num_inference_steps": 30,
+        "guidance": 5,
+        "seed": -1,
+        "negative_prompt": "",
+        "flow_shift": 5,
+        "enable_prompt_optimization": False,
+        "enable_safety_checker": True
+    },
+    "wan-i2v": {
+        "infinidream_algorithm": "wan-i2v",
+        "prompt": "smiling cute furry creature drawn in fantastical and surreal Children's book style.  Main subject is surrounded by friends from myths of all cultures. Colors are pastel. Black background. The creatures dance and wiggle with glee.",
+        "image": "11253978-5b15-4219-b587-bc0d9ed7741a",
+        "size": "1280*720",
+        "duration": 5,
+        "num_inference_steps": 30,
+        "guidance": 5,
+        "seed": -1,
+        "negative_prompt": "",
+        "flow_shift": 5,
+        "enable_prompt_optimization": False,
+        "enable_safety_checker": False
+    },
+    "wan-i2v-lora": {
+        "infinidream_algorithm": "wan-i2v-lora",
+        "prompt": "orbit 180 around an astronaut on the moon.",
+        "image": "6adfec90-8803-4727-98ce-ec768be9a21d",
+        "duration": 5,
+        "seed": -1,
+        "high_noise_loras": [
+            {
+                "path": "https://huggingface.co/ostris/wan22_i2v_14b_orbit_shot_lora/resolve/main/wan22_14b_i2v_orbit_high_noise.safetensors",
+                "scale": 1
+            }
+        ],
+        "low_noise_loras": [
+            {
+                "path": "https://huggingface.co/ostris/wan22_i2v_14b_orbit_shot_lora/resolve/main/wan22_14b_i2v_orbit_low_noise.safetensors",
+                "scale": 1
+            }
+        ],
+        "enable_safety_checker": True
     }
 }
 
@@ -145,6 +200,10 @@ Available algorithms:
 Examples:
   python gen.py --algo animatediff
   python gen.py --algo uprez --timeout 7200
+  python gen.py --algo qwen-image
+  python gen.py --algo wan-t2v
+  python gen.py --algo wan-i2v
+  python gen.py --algo wan-i2v-lora
         """
     )
     

@@ -57,6 +57,14 @@ def run():
     #     "8bdcab8b-404d-4651-b24b-42edd21f1b4d", {"name": "name from python"}
     # )
 
+    # Update dream's displayedOwner (requires admin privileges)
+    # displayedOwner must be a user ID (integer), not a UUID
+    # updated_dream = edream_client.update_dream(
+    #     "8bdcab8b-404d-4651-b24b-42edd21f1b4d",
+    #     {"displayedOwner": 123}  # Replace 123 with the target user ID
+    # )
+    # print(f"Updated dream owner: {updated_dream['displayedOwner']}")
+
     # edream_client.downvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")
 
     # edream_client.upvote_dream("8bdcab8b-404d-4651-b24b-42edd21f1b4d")

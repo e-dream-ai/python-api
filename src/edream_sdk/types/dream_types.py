@@ -122,6 +122,7 @@ class UpdateDreamRequest(TypedDict):
     activityLevel: Optional[int] = None
     featureRank: Optional[int] = None
     displayedOwner: Optional[int] = None
+    user: Optional[str] = None
     startKeyframe: Optional[str] = None
     endKeyframe: Optional[str] = None
     description: Optional[str] = None

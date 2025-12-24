@@ -29,8 +29,10 @@ def run():
         print("ERROR: No API key found. Please check your .env file.")
         return
     
+    backend_url = os.getenv("BACKEND_URL", "https://api-stage.infinidream.ai/api/v1")
+    
     edream_client = create_edream_client(
-        backend_url="https://api-stage.infinidream.ai/api/v1",  # or "http://localhost:8080/api/v1" for local testing
+        backend_url=backend_url,
         api_key=api_key
     )
 

@@ -21,8 +21,12 @@ import os
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
 
-edream_client = create_edream_client(backend_url="https://api-alpha.infinidream.ai/api/v1",
-                                     api_key=os.getenv("API_KEY"))
+load_dotenv()
+
+edream_client = create_edream_client(
+    backend_url=os.getenv("BACKEND_URL", "https://api-alpha.infinidream.ai/api/v1"),
+    api_key=os.getenv("API_KEY")
+)
 user = edream_client.get_logged_user()
 print(user)
 ```

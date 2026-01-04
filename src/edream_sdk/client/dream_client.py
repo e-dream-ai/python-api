@@ -82,15 +82,19 @@ class DreamClient:
         dream = data["dream"]
         return dream
 
-    def set_dream_failed(self, uuid: str) -> Dream:
+    def set_dream_failed(self, uuid: str, error: str = None) -> Dream:
         """
         Set dream to 'failed' status by its uuid
         Args:
             uuid (str): dream uuid
+            error (str, optional): error message
         Returns:
             Dream: Updated dream
         """
-        response = self.api_client.post(f"/dream/{uuid}/status/failed")
+        data = {}
+        if error:
+            data["error"] = error
+        response = self.api_client.post(f"/dream/{uuid}/status/failed", data)
         data: DreamResponseWrapper = response["data"]
         dream = data["dream"]
         return dream

@@ -58,6 +58,7 @@ class Dream(TypedDict):
     downvotes: Optional[int] = None
     sourceUrl: Optional[str] = None
     description: Optional[str] = None
+    error: Optional[str] = None
     ccbyLicense: Optional[bool] = None
     md5: Optional[str] = None
     prompt: Optional[Dict] = None

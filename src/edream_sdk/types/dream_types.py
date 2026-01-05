@@ -153,3 +153,4 @@ class SetDreamProcessedRequest(TypedDict):
     activityLevel: Optional[float] = None
     filmstrip: Optional[List[str]] = None
     md5: Optional[str] = None
+    mediaType: Optional[DreamMediaType] = None

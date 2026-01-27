@@ -58,7 +58,7 @@ python tests/gen.py --algo wan-i2v-lora    # Wan image-to-video with LoRA (uses 
 
 The script will create the dream, poll for completion, and display the video/image URL when ready.
 
-## More examples of AI Generation
+#### More examples of AI Generation
 
 See https://github.com/e-dream-ai/engines
 

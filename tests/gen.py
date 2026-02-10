@@ -7,8 +7,8 @@ from edream_sdk.client import create_edream_client
 
 load_dotenv()
 
-BACKEND_URL = os.getenv("BACKEND_URL", "https://api-stage.infinidream.ai/api/v1")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://stage.infinidream.ai")
+BACKEND_URL = os.getenv("BACKEND_URL", "https://api-alpha.infinidream.ai/api/v1")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://alpha.infinidream.ai")
 
 ALGORITHM_PROMPTS = {
     "animatediff": {
@@ -33,7 +33,7 @@ ALGORITHM_PROMPTS = {
         "0": "a fish on a bicycle",
         "width": 1024,
         "height": 576,
-        "max_frames": 600,
+        "max_frames": 40,
         "fps": 16
     },
     "uprez": {
@@ -103,9 +103,9 @@ ALGORITHM_PROMPTS = {
     }
 }
 
-def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 10800):
+def poll_dream_status(client, dream_uuid: str, dream_url: str, max_wait_seconds: int = 10800):
     print(f"\n{'='*60}")
-    print(f"Polling dream status for: {dream_uuid}")
+    print(f"Polling dream status for: {dream_url}")
     print(f"{'='*60}\n")
     
     start_time = time.time()
@@ -126,7 +126,7 @@ def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 10800):
                 print(f"Video URL:          {dream.get('video', 'N/A')}")
                 print(f"Thumbnail URL:      {dream.get('thumbnail', 'N/A')}")
                 print(f"Original Video URL: {dream.get('original_video', 'N/A')}")
-                print(f"\nView at: {FRONTEND_URL}/dream/{dream_uuid}\n")
+                print(f"\nView at: {dream_url}\n")
                 return True
             
             if current_status == "failed":
@@ -177,12 +177,13 @@ def create_dream_from_prompt(algo: str, timeout: int = 10800):
         })
         
         dream_uuid = dream["uuid"]
+        dream_url = f"{FRONTEND_URL}/dream/{dream_uuid}"
         print(f"Dream created successfully!")
-        print(f"Dream UUID: {dream_uuid}")
+        print(f"Dream URL: {dream_url}")
         print(f"Status: {dream.get('status', 'unknown')}")
         print()
-        
-        poll_dream_status(edream_client, dream_uuid, max_wait_seconds=timeout)
+
+        poll_dream_status(edream_client, dream_uuid, dream_url, max_wait_seconds=timeout)
         
     except Exception as e:
         print(f"\nERROR: Failed to create dream: {e}\n")

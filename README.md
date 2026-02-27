@@ -11,6 +11,7 @@ works fine with the current servers.
 If you need to setup locally to test or run code, follow
 [BUILD.md](BUILD.md) documentation.
 
+
 ### simple example
 
 Get an API key from your profile on the server, and store it in a .env
@@ -42,6 +43,8 @@ python tests/run.py
 this file has an example of every API call.
 
 ### AI generation
+
+Use the [Quick Start](https://docs.google.com/document/d/1sXfGgogyrDyaOOxCyG6uvkG1l6uTUE2iNdkqVAa-N0Q).
 
 Generate dreams using AI algorithms:
 

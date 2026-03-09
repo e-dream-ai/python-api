@@ -56,6 +56,7 @@ class Playlist(TypedDict):
     keyframes: Optional[List[Keyframe]] = None
     itemCount: Optional[int] = 0
     featureRank: Optional[int] = 0
+    loops: Optional[int] = 0
     nsfw: Optional[bool] = None
     description: Optional[str] = None
     created_at: Optional[str] = None
@@ -79,6 +80,7 @@ class CreatePlaylistRequest(TypedDict):
     name: str
     description: Optional[str] = None
     nsfw: Optional[bool] = None
+    loops: Optional[int] = None
 
 
 # Update playlist request mapping
@@ -88,6 +90,7 @@ class UpdatePlaylistRequest(TypedDict):
     displayedOwner: Optional[int] = None
     nsfw: Optional[bool] = None
     description: Optional[str] = None
+    loops: Optional[int] = None
 
 
 # Playlist item response mapping

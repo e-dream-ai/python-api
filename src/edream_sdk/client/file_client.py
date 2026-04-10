@@ -96,7 +96,7 @@ class FileClient:
             str: Endpoint for refreshing URL
         """
         if type in [FileType.DREAM, FileType.FILMSTRIP, FileType.THUMBNAIL]:
-            return f"/dream/{uuid}/create-multipart-upload"
+            return f"/dream/{uuid}/refresh-multipart-upload-url"
         elif type == FileType.KEYFRAME:
             return f""
         else:
@@ -193,14 +193,13 @@ class FileClient:
         upload_id: str,
         part_number: int,
         file_extension: str,
-        options: UploadFileOptions,
+        options: Optional[UploadFileOptions] = None,
     ) -> RefreshMultipartUploadUrlFormValues:
         payload: RefreshMultipartUploadUrlFormValues = {
             "type": type,
             "uploadId": upload_id,
             "part": part_number,
             "extension": file_extension,
-            "parts": 1,
         }
 
         # Add optional fields based on file type
@@ -524,7 +523,7 @@ class FileClient:
                     refresh_result = self._refresh_multipart_upload(
                         endpoint=refresh_upload_endpoint, request_data=refresh_payload
                     )
-                    url = refresh_result["urls"][0]
+                    url = refresh_result["url"]
                 else:
                     raise Exception(f"Upload failed. Max retries reached on part {part_number}")
 

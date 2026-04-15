@@ -54,6 +54,11 @@ def main():
         help="Connect last dream back to first for seamless looping",
     )
     parser.add_argument(
+        "--each",
+        action="store_true",
+        help="Link each dream's start and end to its own keyframe instead of chaining",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Show what would be done without making changes",
@@ -138,8 +143,9 @@ def main():
             dream_name = dream.get("name", f"dream_{i}")
             start_kf = keyframes[i] if i < len(keyframes) else None
 
-            # End keyframe = start keyframe of the next dream
-            if i + 1 < len(dreams):
+            if args.each:
+                end_kf = start_kf
+            elif i + 1 < len(dreams):
                 end_kf = keyframes[i + 1] if (i + 1) < len(keyframes) else None
             elif args.loop and keyframes and keyframes[0]:
                 end_kf = keyframes[0]

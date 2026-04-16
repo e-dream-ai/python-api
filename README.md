@@ -46,18 +46,17 @@ this file has an example of every API call.
 
 Use the [Quick Start](https://docs.google.com/document/d/1sXfGgogyrDyaOOxCyG6uvkG1l6uTUE2iNdkqVAa-N0Q).
 
-Generate dreams using AI algorithms:
+Set `DREAM_UUID` (a processed video dream) and `STILL_UUID` (a processed image dream) in your `.env`. See `.env.example`.
 
 ```bash
-python tests/gen.py --all
+python tests/gen.py --algo ltx-i2v     # single algorithm
+python tests/gen.py --all              # smoke test every endpoint
 python tests/gen.py --all --timeout 7200
 ```
 
-The script submits one job per algorithm, polls for completion, and prints the result URL.
+Available algorithms: `animatediff`, `deforum`, `wan-t2v`, `wan-i2v`, `wan-i2v-lora`, `ltx-i2v`, `qwen-image`, `z-image-turbo`, `uprez`, `nvidia-uprez`
 
-#### More examples of AI Generation
-
-See https://github.com/e-dream-ai/engines
+For batch/playlist workflows see [engines](https://github.com/e-dream-ai/engines).
 
 ### REST API
 

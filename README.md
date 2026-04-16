@@ -46,24 +46,17 @@ this file has an example of every API call.
 
 Use the [Quick Start](https://docs.google.com/document/d/1sXfGgogyrDyaOOxCyG6uvkG1l6uTUE2iNdkqVAa-N0Q).
 
-Generate dreams using AI algorithms:
+Set `DREAM_UUID` (a processed video dream) and `STILL_UUID` (a processed image dream) in your `.env`. See `.env.example`.
 
 ```bash
-# Available algorithms
-python tests/gen.py --algo animatediff    # AnimateDiff video generation
-python tests/gen.py --algo deforum        # Deforum video generation
-python tests/gen.py --algo uprez          # Video upscaling
-python tests/gen.py --algo qwen-image     # Qwen image generation
-python tests/gen.py --algo wan-t2v         # Wan text-to-video generation
-python tests/gen.py --algo wan-i2v         # Wan image-to-video generation (uses image dream UUID)
-python tests/gen.py --algo wan-i2v-lora    # Wan image-to-video with LoRA (uses image dream UUID)
+python tests/gen.py --algo ltx-i2v     # single algorithm
+python tests/gen.py --all              # smoke test every endpoint
+python tests/gen.py --all --timeout 7200
 ```
 
-The script will create the dream, poll for completion, and display the video/image URL when ready.
+Available algorithms: `animatediff`, `deforum`, `wan-t2v`, `wan-i2v`, `wan-i2v-lora`, `ltx-i2v`, `qwen-image`, `z-image-turbo`, `uprez`, `nvidia-uprez`
 
-#### More examples of AI Generation
-
-See https://github.com/e-dream-ai/engines
+For batch/playlist workflows see [engines](https://github.com/e-dream-ai/engines).
 
 ### REST API
 

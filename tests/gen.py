@@ -35,7 +35,7 @@ ALGORITHM_PROMPTS = {
         "0": "a fish on a bicycle",
         "width": 1024,
         "height": 576,
-        "max_frames": 600,
+        "max_frames": 40,
         "fps": 16
     },
     "wan-t2v": {

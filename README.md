@@ -11,6 +11,7 @@ works fine with the current servers.
 If you need to setup locally to test or run code, follow
 [BUILD.md](BUILD.md) documentation.
 
+
 ### simple example
 
 Get an API key from your profile on the server, and store it in a .env
@@ -43,24 +44,9 @@ this file has an example of every API call.
 
 ### AI generation
 
-Set `DREAM_UUID` (a processed video dream) and `STILL_UUID` (a processed image dream) in your `.env` for endpoints that require existing content. See `.env.example`.
+Use the [Quick Start](https://docs.google.com/document/d/1sXfGgogyrDyaOOxCyG6uvkG1l6uTUE2iNdkqVAa-N0Q).
 
-Run a single algorithm:
-
-```bash
-python tests/gen.py --algo wan-t2v         # text-to-video
-python tests/gen.py --algo wan-i2v         # image-to-video (requires STILL_UUID)
-python tests/gen.py --algo wan-i2v-lora    # image-to-video with LoRA (requires STILL_UUID)
-python tests/gen.py --algo ltx-i2v         # LTX image-to-video (requires STILL_UUID)
-python tests/gen.py --algo qwen-image      # image generation
-python tests/gen.py --algo z-image-turbo   # fast image generation
-python tests/gen.py --algo uprez           # video upscaling (requires DREAM_UUID)
-python tests/gen.py --algo nvidia-uprez    # NVIDIA video upscaling (requires DREAM_UUID)
-python tests/gen.py --algo animatediff     # AnimateDiff video generation
-python tests/gen.py --algo deforum         # Deforum video generation
-```
-
-Or smoke test every endpoint at once:
+Generate dreams using AI algorithms:
 
 ```bash
 python tests/gen.py --all
@@ -68,6 +54,10 @@ python tests/gen.py --all --timeout 7200
 ```
 
 The script submits one job per algorithm, polls for completion, and prints the result URL.
+
+#### More examples of AI Generation
+
+See https://github.com/e-dream-ai/engines
 
 ### REST API
 

@@ -9,6 +9,8 @@ load_dotenv()
 
 BACKEND_URL = os.getenv("BACKEND_URL", "https://api-stage.infinidream.ai/api/v1")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://stage.infinidream.ai")
+DREAM_UUID = os.getenv("DREAM_UUID")  # video dream for endpoints that take video input
+STILL_UUID = os.getenv("STILL_UUID")  # image dream for endpoints that take image input
 
 ALGORITHM_PROMPTS = {
     "animatediff": {
@@ -36,27 +38,9 @@ ALGORITHM_PROMPTS = {
         "max_frames": 600,
         "fps": 16
     },
-    "uprez": {
-        "infinidream_algorithm": "uprez",
-        "video_uuid": "d3f06c44-b453-4ea8-8985-fe0f97d607fe",
-        "upscale_factor": 2,
-        "interpolation_factor": 2,
-        "output_format": "mp4",
-        "tile_size": 1024,
-        "tile_padding": 10,
-        "quality": "high"
-    },
-    "qwen-image": {
-        "infinidream_algorithm": "qwen-image",
-        "prompt": "smiling cute furry creature drawn in fantastical and surreal Children's book style.  Main subject is surrounded by friends from myths of all cultures. Colors are pastel. Black background.",
-        "size": "1280*720",
-        "seed": -1,
-        "negative_prompt": "",
-        "enable_safety_checker": True
-    },
     "wan-t2v": {
         "infinidream_algorithm": "wan-t2v",
-        "prompt": "A serene morning in an ancient forest, golden sunlight filtering through tall pine trees, creating dancing light patterns on the moss-covered ground. Gentle mist drifts between the tree trunks as small particles float in the sunbeams. Camera slowly pans right revealing a small woodland stream with crystal clear water flowing over smooth stones.",
+        "prompt": "A serene morning in an ancient forest, golden sunlight filtering through tall pine trees, creating dancing light patterns on the moss-covered ground.",
         "size": "1280*720",
         "duration": 5,
         "num_inference_steps": 30,
@@ -69,8 +53,8 @@ ALGORITHM_PROMPTS = {
     },
     "wan-i2v": {
         "infinidream_algorithm": "wan-i2v",
-        "prompt": "smiling cute furry creature drawn in fantastical and surreal Children's book style.  Main subject is surrounded by friends from myths of all cultures. Colors are pastel. Black background. The creatures dance and wiggle with glee.",
-        "image": "11253978-5b15-4219-b587-bc0d9ed7741a",
+        "prompt": "The scene comes alive with gentle motion.",
+        "image": STILL_UUID,
         "size": "1280*720",
         "duration": 5,
         "num_inference_steps": 30,
@@ -84,7 +68,7 @@ ALGORITHM_PROMPTS = {
     "wan-i2v-lora": {
         "infinidream_algorithm": "wan-i2v-lora",
         "prompt": "orbit 180 around an astronaut on the moon.",
-        "image": "6adfec90-8803-4727-98ce-ec768be9a21d",
+        "image": STILL_UUID,
         "duration": 5,
         "seed": -1,
         "high_noise_loras": [
@@ -100,131 +84,171 @@ ALGORITHM_PROMPTS = {
             }
         ],
         "enable_safety_checker": True
-    }
+    },
+    "ltx-i2v": {
+        "infinidream_algorithm": "ltx-i2v",
+        "prompt": "A cinematic shot of mountains.",
+        "source_dream_uuid": STILL_UUID,
+        "duration": 5,
+        "seed": -1,
+        "lora": "ltx-2-19b-lora-camera-control-static.safetensors",
+        "lora_strength": 0.4
+    },
+    "qwen-image": {
+        "infinidream_algorithm": "qwen-image",
+        "prompt": "smiling cute furry creature drawn in fantastical and surreal children's book style. Colors are pastel. Black background.",
+        "size": "1280*720",
+        "seed": -1,
+        "negative_prompt": "",
+        "enable_safety_checker": True
+    },
+    "z-image-turbo": {
+        "infinidream_algorithm": "z-image-turbo",
+        "prompt": "A vibrant sunset over ocean waves, photorealistic.",
+        "size": "1280*720",
+        "seed": -1,
+        "output_format": "png",
+        "enable_safety_checker": True
+    },
+    "uprez": {
+        "infinidream_algorithm": "uprez",
+        "video_uuid": DREAM_UUID,
+        "upscale_factor": 2,
+        "interpolation_factor": 2,
+        "output_format": "mp4",
+        "tile_size": 1024,
+        "tile_padding": 10,
+        "quality": "high"
+    },
+    "nvidia-uprez": {
+        "infinidream_algorithm": "nvidia-uprez",
+        "video_uuid": DREAM_UUID,
+        "upscale_factor": 2,
+        "quality": "ULTRA"
+    },
 }
+
 
 def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 10800):
     print(f"\n{'='*60}")
-    print(f"Polling dream status for: {dream_uuid}")
+    print(f"Polling: {dream_uuid}")
     print(f"{'='*60}\n")
-    
+
     start_time = time.time()
     last_status = None
-    
+
     while time.time() - start_time < max_wait_seconds:
         try:
             dream = client.get_dream(dream_uuid)
             current_status = dream.get("status", "unknown")
-            
+
             if current_status != last_status:
                 elapsed = int(time.time() - start_time)
                 print(f"[{elapsed}s] Status: {current_status}")
                 last_status = current_status
-            
+
             if current_status == "processed":
-                print("Dream processing completed!")
-                print(f"Video URL:          {dream.get('video', 'N/A')}")
-                print(f"Thumbnail URL:      {dream.get('thumbnail', 'N/A')}")
-                print(f"Original Video URL: {dream.get('original_video', 'N/A')}")
-                print(f"\nView at: {FRONTEND_URL}/dream/{dream_uuid}\n")
+                print(f"Done. View at: {FRONTEND_URL}/dream/{dream_uuid}\n")
                 return True
-            
+
             if current_status == "failed":
-                print(f"\n{'='*60}")
-                print("Dream processing failed!")
-                print(f"{'='*60}\n")
+                print(f"Failed: {dream.get('error', 'unknown error')}\n")
                 return False
-            
+
             time.sleep(5)
-            
+
         except Exception as e:
             print(f"Error polling status: {e}")
             time.sleep(5)
-    
-    print(f"\n{'='*60}")
-    print(f"Timeout after {max_wait_seconds}s")
-    print(f"{'='*60}\n")
+
+    print(f"Timeout after {max_wait_seconds}s\n")
     return False
 
-def create_dream_from_prompt(algo: str, timeout: int = 10800):
-    api_key = os.getenv("API_KEY")
-    if not api_key:
-        print("ERROR: No API key found. Please check your .env file.")
-        return
-    
-    if algo not in ALGORITHM_PROMPTS:
-        print(f"ERROR: Unknown algorithm '{algo}'")
-        print(f"Available algorithms: {', '.join(ALGORITHM_PROMPTS.keys())}")
-        return
-    
-    edream_client = create_edream_client(
-        backend_url=BACKEND_URL,
-        api_key=api_key
-    )
-    
+
+def run_algo(client, algo: str, timeout: int) -> bool:
     prompt_data = ALGORITHM_PROMPTS[algo].copy()
-        
-    print(f"Creating dream with algorithm: {algo}")
-    print(f"Prompt configuration:")
+
+    if "image" in prompt_data and prompt_data["image"] is None:
+        print(f"ERROR: {algo} requires STILL_UUID in .env")
+        return False
+    if "source_dream_uuid" in prompt_data and prompt_data["source_dream_uuid"] is None:
+        print(f"ERROR: {algo} requires STILL_UUID in .env")
+        return False
+    if "video_uuid" in prompt_data and prompt_data["video_uuid"] is None:
+        print(f"ERROR: {algo} requires DREAM_UUID in .env")
+        return False
+
+    print(f"\nAlgorithm: {algo}")
     print(json.dumps(prompt_data, indent=2))
     print()
-    
+
     try:
-        dream = edream_client.create_dream_from_prompt({
-            "name": f"Test {algo} generation",
-            "description": f"Generated using {algo} algorithm",
+        dream = client.create_dream_from_prompt({
+            "name": f"Test {algo}",
+            "description": f"Smoke test for {algo}",
             "prompt": json.dumps(prompt_data),
         })
-        
+
         dream_uuid = dream["uuid"]
-        print(f"Dream created successfully!")
-        print(f"Dream UUID: {dream_uuid}")
-        print(f"Status: {dream.get('status', 'unknown')}")
-        print()
-        
-        poll_dream_status(edream_client, dream_uuid, max_wait_seconds=timeout)
-        
+        print(f"Created: {dream_uuid} (status: {dream.get('status', 'unknown')})")
+
+        return poll_dream_status(client, dream_uuid, max_wait_seconds=timeout)
+
     except Exception as e:
-        print(f"\nERROR: Failed to create dream: {e}\n")
+        print(f"ERROR: {e}\n")
         import traceback
         traceback.print_exc()
+        return False
+
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate dreams using AI algorithms",
+        description="Smoke test AI generation endpoints",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=f"""
-Available algorithms:
-  {', '.join(ALGORITHM_PROMPTS.keys())}
+        epilog=f"Available algorithms: {', '.join(ALGORITHM_PROMPTS.keys())}"
+    )
 
-Examples:
-  python gen.py --algo animatediff
-  python gen.py --algo uprez --timeout 7200
-  python gen.py --algo qwen-image
-  python gen.py --algo wan-t2v
-  python gen.py --algo wan-i2v
-  python gen.py --algo wan-i2v-lora
-        """
-    )
-    
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         "--algo",
-        required=True,
         choices=list(ALGORITHM_PROMPTS.keys()),
-        help="Algorithm to use for generation"
+        help="Single algorithm to test"
     )
-    
+    group.add_argument(
+        "--all",
+        action="store_true",
+        help="Run one generation for every algorithm sequentially"
+    )
+
     parser.add_argument(
         "--timeout",
         type=int,
         default=3600,
-        help="Maximum wait time in seconds for dream processing (default: 3600 = 1 hour)"
+        help="Max wait per job in seconds (default: 3600)"
     )
-    
+
     args = parser.parse_args()
-    
-    create_dream_from_prompt(args.algo, timeout=args.timeout)
+
+    api_key = os.getenv("API_KEY")
+    if not api_key:
+        print("ERROR: API_KEY not found in .env")
+        return
+
+    client = create_edream_client(backend_url=BACKEND_URL, api_key=api_key)
+
+    algos = list(ALGORITHM_PROMPTS.keys()) if args.all else [args.algo]
+
+    results = {}
+    for algo in algos:
+        results[algo] = run_algo(client, algo, args.timeout)
+
+    if args.all:
+        print("\n" + "="*60)
+        print("Results:")
+        for algo, ok in results.items():
+            print(f"  {'OK' if ok else 'FAIL':4}  {algo}")
+        print("="*60)
+
 
 if __name__ == "__main__":
     main()
-

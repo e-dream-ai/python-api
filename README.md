@@ -43,20 +43,31 @@ this file has an example of every API call.
 
 ### AI generation
 
-Generate dreams using AI algorithms:
+Set `DREAM_UUID` (a processed video dream) and `STILL_UUID` (a processed image dream) in your `.env` for endpoints that require existing content. See `.env.example`.
+
+Run a single algorithm:
 
 ```bash
-# Available algorithms
-python tests/gen.py --algo animatediff    # AnimateDiff video generation
-python tests/gen.py --algo deforum        # Deforum video generation
-python tests/gen.py --algo uprez          # Video upscaling
-python tests/gen.py --algo qwen-image     # Qwen image generation
-python tests/gen.py --algo wan-t2v         # Wan text-to-video generation
-python tests/gen.py --algo wan-i2v         # Wan image-to-video generation (uses image dream UUID)
-python tests/gen.py --algo wan-i2v-lora    # Wan image-to-video with LoRA (uses image dream UUID)
+python tests/gen.py --algo wan-t2v         # text-to-video
+python tests/gen.py --algo wan-i2v         # image-to-video (requires STILL_UUID)
+python tests/gen.py --algo wan-i2v-lora    # image-to-video with LoRA (requires STILL_UUID)
+python tests/gen.py --algo ltx-i2v         # LTX image-to-video (requires STILL_UUID)
+python tests/gen.py --algo qwen-image      # image generation
+python tests/gen.py --algo z-image-turbo   # fast image generation
+python tests/gen.py --algo uprez           # video upscaling (requires DREAM_UUID)
+python tests/gen.py --algo nvidia-uprez    # NVIDIA video upscaling (requires DREAM_UUID)
+python tests/gen.py --algo animatediff     # AnimateDiff video generation
+python tests/gen.py --algo deforum         # Deforum video generation
 ```
 
-The script will create the dream, poll for completion, and display the video/image URL when ready.
+Or smoke test every endpoint at once:
+
+```bash
+python tests/gen.py --all
+python tests/gen.py --all --timeout 7200
+```
+
+The script submits one job per algorithm, polls for completion, and prints the result URL.
 
 ### REST API
 

@@ -58,7 +58,7 @@ def main():
 
     print(f"\nTransferring playlist ownership...")
     try:
-        client.update_playlist(args.playlist, {"user": args.user})
+        client.update_playlist(args.playlist, {"name": playlist_name, "user": args.user})
         after = client.get_playlist(args.playlist, auto_populate=False)
         owner = (after.get("user") or {}).get("uuid")
         if owner == args.user:

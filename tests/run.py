@@ -4,6 +4,7 @@ import json
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
+from edream_sdk.utils.env import require_env
 from edream_sdk.types.playlist_types import CreatePlaylistRequest, PlaylistItemType, UpdatePlaylistRequest
 from edream_sdk.types.dream_types import (
     UpdateDreamRequest,
@@ -29,7 +30,7 @@ def run():
         print("ERROR: No API key found. Please check your .env file.")
         return
     
-    backend_url = os.getenv("BACKEND_URL", "https://api-stage.infinidream.ai/api/v1")
+    backend_url = require_env("BACKEND_URL")
     
     edream_client = create_edream_client(
         backend_url=backend_url,

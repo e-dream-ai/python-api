@@ -4,11 +4,11 @@ import json
 import argparse
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
+from edream_sdk.utils.env import require_env
 
 load_dotenv()
 
-BACKEND_URL = os.getenv("BACKEND_URL", "https://api-stage.infinidream.ai/api/v1")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://stage.infinidream.ai")
+# only needed by algorithms that take a source image/video (validated per-algo below).
 DREAM_UUID = os.getenv("DREAM_UUID")  # video dream for endpoints that take video input
 STILL_UUID = os.getenv("STILL_UUID")  # image dream for endpoints that take image input
 
@@ -126,10 +126,39 @@ ALGORITHM_PROMPTS = {
         "upscale_factor": 2,
         "quality": "ULTRA"
     },
+    "flux-schnell": {
+        "infinidream_algorithm": "flux-schnell",
+        "prompt": "A vibrant sunset over ocean waves, photorealistic.",
+        "size": "1280*720",
+        "num_inference_steps": 4,
+        "seed": -1
+    },
+    "flux-kontext-i2i": {
+        "infinidream_algorithm": "flux-kontext-i2i",
+        "prompt": "Turn it into a watercolor painting with soft pastel colors.",
+        "source_dream_uuid": STILL_UUID,
+        "seed": -1
+    },
+    "kling-i2v": {
+        "infinidream_algorithm": "kling-i2v",
+        "prompt": "The scene comes alive with gentle, cinematic motion.",
+        "source_dream_uuid": STILL_UUID,
+        "duration": 5,
+        "negative_prompt": "",
+        "cfg_scale": 0.5
+    },
+    "kling-25-i2v": {
+        "infinidream_algorithm": "kling-25-i2v",
+        "prompt": "The scene comes alive with gentle, cinematic motion.",
+        "source_dream_uuid": STILL_UUID,
+        "duration": 5,
+        "negative_prompt": "",
+        "cfg_scale": 0.5
+    },
 }
 
 
-def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 10800):
+def poll_dream_status(client, dream_uuid: str, frontend_url: str, max_wait_seconds: int = 10800):
     print(f"\n{'='*60}")
     print(f"Polling: {dream_uuid}")
     print(f"{'='*60}\n")
@@ -148,7 +177,7 @@ def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 10800):
                 last_status = current_status
 
             if current_status == "processed":
-                print(f"Done. View at: {FRONTEND_URL}/dream/{dream_uuid}\n")
+                print(f"Done. View at: {frontend_url}/dream/{dream_uuid}\n")
                 return True
 
             if current_status == "failed":
@@ -165,7 +194,7 @@ def poll_dream_status(client, dream_uuid: str, max_wait_seconds: int = 10800):
     return False
 
 
-def run_algo(client, algo: str, timeout: int) -> bool:
+def run_algo(client, algo: str, timeout: int, frontend_url: str) -> bool:
     prompt_data = ALGORITHM_PROMPTS[algo].copy()
 
     if "image" in prompt_data and prompt_data["image"] is None:
@@ -192,7 +221,7 @@ def run_algo(client, algo: str, timeout: int) -> bool:
         dream_uuid = dream["uuid"]
         print(f"Created: {dream_uuid} (status: {dream.get('status', 'unknown')})")
 
-        return poll_dream_status(client, dream_uuid, max_wait_seconds=timeout)
+        return poll_dream_status(client, dream_uuid, frontend_url, max_wait_seconds=timeout)
 
     except Exception as e:
         print(f"ERROR: {e}\n")
@@ -229,18 +258,17 @@ def main():
 
     args = parser.parse_args()
 
-    api_key = os.getenv("API_KEY")
-    if not api_key:
-        print("ERROR: API_KEY not found in .env")
-        return
+    backend_url = require_env("BACKEND_URL")
+    frontend_url = require_env("FRONTEND_URL")
+    api_key = require_env("API_KEY")
 
-    client = create_edream_client(backend_url=BACKEND_URL, api_key=api_key)
+    client = create_edream_client(backend_url=backend_url, api_key=api_key)
 
     algos = list(ALGORITHM_PROMPTS.keys()) if args.all else [args.algo]
 
     results = {}
     for algo in algos:
-        results[algo] = run_algo(client, algo, args.timeout)
+        results[algo] = run_algo(client, algo, args.timeout, frontend_url)
 
     if args.all:
         print("\n" + "="*60)

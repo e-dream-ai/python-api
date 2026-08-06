@@ -32,6 +32,7 @@ from dotenv import load_dotenv
 
 import requests
 
+from edream_sdk.utils.env import require_env
 from edream_sdk.client import create_edream_client
 from edream_sdk.types.dream_types import UpdateDreamRequest
 from edream_sdk.types.playlist_types import PlaylistItemType
@@ -312,7 +313,7 @@ def main():
     if not api_key:
         print("ERROR: No API key found. Set API_KEY in your .env file.")
         sys.exit(1)
-    backend_url = os.getenv("BACKEND_URL", "https://api-alpha.infinidream.ai/api/v1")
+    backend_url = require_env("BACKEND_URL")
     client = create_edream_client(backend_url=backend_url, api_key=api_key)
 
     print(f"Fetching playlist {args.playlist_uuid}...")

@@ -3,8 +3,9 @@
 # dummy file
 assets/**
 
-# env variables
-.env
+# env variables - every variant holds live keys except the template
+.env*
+!.env.example
 
 # venv
 venv

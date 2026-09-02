@@ -31,8 +31,14 @@ which would leave them as strays *and* create a duplicate set beside them.
 
 `/run` and `/cancel` require the CREATOR or ADMIN role.
 
+`dream_algorithm` selects the per-dream algorithm: `uprez` (general model,
+resolution + frame interpolation) or `nvidia-uprez` (RTX VSR, resolution only).
+This replaces engines/scripts/run_nvidia_vsr_batch.py as well as
+run_uprez_batch.py; both hand-built their dreams.
+
     python scripts/uprez_playlist.py <source_uuid> [<source_uuid> ...] --dry-run
     python scripts/uprez_playlist.py b3b3ab87-... d2167537-...
+    python scripts/uprez_playlist.py <source_uuid> --dream-algorithm nvidia-uprez
     python scripts/uprez_playlist.py --cancel <derived_uuid>
 """
 
@@ -48,22 +54,50 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from edream_sdk.client import create_edream_client
 
 
+# The two video-upscaling algorithms take different parameters. nvidia-uprez
+# is RTX VSR: resolution only, no frame interpolation and no tiling, and its
+# quality is the NVIDIA VFX SDK QualityLevel enum (uppercase). uprez's quality
+# is an x264 encode preset (lowercase). They are not interchangeable.
+QUALITY_CHOICES = {
+    "uprez": ["low", "medium", "high"],
+    "nvidia-uprez": ["LOW", "MEDIUM", "HIGH", "ULTRA"],
+}
+DEFAULT_QUALITY = {"uprez": "high", "nvidia-uprez": "ULTRA"}
+
+
+def build_params(args):
+    """Spread verbatim onto every derived dream, so anything the container
+    should not default must be named here -- notably tile_size, which the
+    uprez container defaults to 512 while the developed config uses 1024."""
+    quality = args.quality or DEFAULT_QUALITY[args.dream_algorithm]
+    if quality not in QUALITY_CHOICES[args.dream_algorithm]:
+        sys.exit(f"ERROR: --quality {quality!r} is invalid for "
+                 f"{args.dream_algorithm}; choose from "
+                 f"{QUALITY_CHOICES[args.dream_algorithm]}")
+
+    if args.dream_algorithm == "nvidia-uprez":
+        if args.interpolation_factor not in (None, 1):
+            sys.exit("ERROR: nvidia-uprez (RTX VSR) does not support frame "
+                     "interpolation; use --dream-algorithm uprez for that")
+        return {"upscale_factor": args.upscale_factor, "quality": quality}
+
+    return {
+        "upscale_factor": args.upscale_factor,
+        "interpolation_factor": (args.interpolation_factor
+                                 if args.interpolation_factor is not None else 2),
+        "output_format": args.output_format,
+        "tile_size": args.tile_size,
+        "tile_padding": args.tile_padding,
+        "quality": quality,
+    }
+
+
 def build_playlist_prompt(source_uuid, args):
-    """The playlist-level prompt. `params` is spread verbatim onto every
-    derived dream, so anything the container should not default must be
-    named here -- notably tile_size, which the container defaults to 512."""
     return {
         "infinidream_algorithm": "uprez_playlist",
         "source_playlist_uuid": source_uuid,
-        "dream_algorithm": "uprez",
-        "params": {
-            "upscale_factor": args.upscale_factor,
-            "interpolation_factor": args.interpolation_factor,
-            "output_format": args.output_format,
-            "tile_size": args.tile_size,
-            "tile_padding": args.tile_padding,
-            "quality": args.quality,
-        },
+        "dream_algorithm": args.dream_algorithm,
+        "params": build_params(args),
     }
 
 
@@ -72,15 +106,23 @@ def main():
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("playlists", nargs="+",
                         help="Source playlist UUID(s), or derived UUID(s) with --cancel")
+    parser.add_argument("--dream-algorithm", default="uprez",
+                        choices=["uprez", "nvidia-uprez"],
+                        help="uprez = general model (upscale + frame interpolation); "
+                             "nvidia-uprez = RTX VSR, resolution only (default: uprez)")
     parser.add_argument("--upscale-factor", type=int, default=2)
-    parser.add_argument("--interpolation-factor", type=int, default=2)
-    parser.add_argument("--quality", default="high", choices=["low", "medium", "high"])
+    parser.add_argument("--interpolation-factor", type=int, default=None,
+                        help="uprez only (default: 2); rejected for nvidia-uprez")
+    parser.add_argument("--quality", default=None,
+                        help="uprez: low/medium/high (default high); "
+                             "nvidia-uprez: LOW/MEDIUM/HIGH/ULTRA (default ULTRA)")
     parser.add_argument("--output-format", default="mp4")
     parser.add_argument("--tile-size", type=int, default=1024,
                         choices=[256, 512, 1024, 2048])
     parser.add_argument("--tile-padding", type=int, default=10)
-    parser.add_argument("--suffix", default="uprez",
-                        help="Appended to the source playlist name (default: 'uprez')")
+    parser.add_argument("--suffix", default=None,
+                        help="Appended to the source playlist name "
+                             "(default: 'uprez' or 'vsr')")
     parser.add_argument("--run", dest="run", action="store_true", default=True,
                         help="Run immediately after creating (default)")
     parser.add_argument("--no-run", dest="run", action="store_false",
@@ -114,7 +156,9 @@ def main():
         )
         total = len(source.get("items", []))
         prompt = build_playlist_prompt(source_uuid, args)
-        name = f"{source['name']} ({args.suffix})"
+        suffix = args.suffix or ("vsr" if args.dream_algorithm == "nvidia-uprez"
+                                 else "uprez")
+        name = f"{source['name']} ({suffix})"
 
         print(f"\n=== {source['name']} ({source_uuid}) ===")
         print(f"  {total} items, {eligible} processed and eligible")
@@ -127,9 +171,8 @@ def main():
         derived = client.create_playlist({
             "name": name,
             "description": (
-                f"Uprez of \"{source['name']}\" ({source_uuid}) at "
-                f"{args.upscale_factor}x resolution and "
-                f"{args.interpolation_factor}x frame interpolation. "
+                f"{args.dream_algorithm} of \"{source['name']}\" ({source_uuid}): "
+                f"{json.dumps(prompt['params'])}. "
                 f"Derived playlist: re-run to sync with the source."),
             "prompt": prompt,
         })

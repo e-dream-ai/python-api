@@ -93,6 +93,12 @@ class UpdatePlaylistRequest(TypedDict):
     loops: Optional[int] = None
 
 
+# Input for adding one item to a playlist (used by the batch endpoint)
+class AddPlaylistItemInput(TypedDict):
+    type: PlaylistItemType
+    uuid: str
+
+
 # Playlist item response mapping
 class PlaylistItemResponseWrapper(TypedDict):
     playlistItem: Optional[PlaylistItem]

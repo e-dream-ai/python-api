@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import List, Optional, Any
 from dataclasses import asdict
 from ..client.api_client import ApiClient
 from ..client.file_client import FileClient
@@ -6,6 +6,7 @@ from ..types.dream_types import Dream
 from ..types.keyframe_types import Keyframe
 from ..types.dream_types import DreamFileType
 from ..types.playlist_types import (
+    AddPlaylistItemInput,
     Playlist,
     PlaylistItem,
     PlaylistItemType,
@@ -19,6 +20,9 @@ from ..types.playlist_types import (
     PlaylistKeyframesResponseWrapper,
 )
 from ..utils.file_utils import verify_file_path
+
+# The backend accepts at most this many items in a single atomic batch.
+MAX_PLAYLIST_ITEMS_PER_BATCH = 500
 
 
 class PlaylistClient:
@@ -107,6 +111,45 @@ class PlaylistClient:
         response_data: PlaylistItemResponseWrapper = response["data"]
         playlistItem = response_data["playlistItem"]
         return playlistItem
+
+    def add_items_to_playlist(
+        self, playlist_uuid: str, items: List[AddPlaylistItemInput]
+    ) -> int:
+        """
+        Adds many items to a playlist in a single atomic request.
+
+        The whole batch is applied in one backend transaction: either every
+        item is added or none is. The backend rejects the batch outright if
+        it contains a duplicate, or if any item is already on the playlist,
+        so filter the list against the playlist's current contents first.
+
+        Args:
+            playlist_uuid (str): playlist uuid
+            items (List[AddPlaylistItemInput]): items to add, each a dict of
+                {"type": PlaylistItemType, "uuid": str}. At most
+                MAX_PLAYLIST_ITEMS_PER_BATCH per call.
+        Returns:
+            int: number of items added
+        """
+        if not items:
+            raise ValueError("items must not be empty")
+        if len(items) > MAX_PLAYLIST_ITEMS_PER_BATCH:
+            raise ValueError(
+                f"cannot add more than {MAX_PLAYLIST_ITEMS_PER_BATCH} items "
+                f"per call, got {len(items)}"
+            )
+
+        form_items = []
+        for item in items:
+            type = item["type"]
+            if type not in [PlaylistItemType.DREAM, PlaylistItemType.PLAYLIST]:
+                raise Exception(f"Type not allowed, use 'dream' or 'playlist'")
+            form_items.append({"type": type.value, "uuid": item["uuid"]})
+
+        response = self.api_client.post(
+            f"/playlist/{playlist_uuid}/items", {"items": form_items}
+        )
+        return response["data"]["added"]
 
     def add_file_to_playlist(
         self, 
@@ -197,9 +240,19 @@ class PlaylistClient:
         keyframe: Keyframe = self._create_keyframe(
             name=keyframe_name, file_path=file_path
         )
-        new_playlist_keyframe = self._add_keyframe_to_playlist(
-            playlist_uuid=playlist["uuid"], keyframe_uuid=keyframe["uuid"]
-        )
+        try:
+            new_playlist_keyframe = self._add_keyframe_to_playlist(
+                playlist_uuid=playlist["uuid"], keyframe_uuid=keyframe["uuid"]
+            )
+        except Exception:
+            # The keyframe exists but is attached to nothing. Leaving it behind
+            # accumulates orphans that later runs cannot see or reuse, so drop
+            # it before surfacing the failure.
+            try:
+                self.delete_keyframe(keyframe["uuid"])
+            except Exception:
+                pass
+            raise
         playlist["playlistKeyframes"].append(new_playlist_keyframe)
         return keyframe
 

@@ -223,6 +223,25 @@ class PlaylistClient:
         playlistKeyframe = data["playlistKeyframe"]
         return playlistKeyframe
 
+    def link_keyframe_to_playlist(
+        self, playlist_uuid: str, keyframe_uuid: str
+    ) -> PlaylistKeyframe:
+        """
+        Adds a keyframe that already exists to a playlist.
+
+        Use this to reuse a keyframe by uuid; add_keyframe_to_playlist
+        creates a new one from a name.
+
+        Args:
+            playlist_uuid (str): playlist uuid
+            keyframe_uuid (str): uuid of an existing keyframe
+        Returns:
+            PlaylistKeyframe: the new playlist/keyframe link
+        """
+        return self._add_keyframe_to_playlist(
+            playlist_uuid=playlist_uuid, keyframe_uuid=keyframe_uuid
+        )
+
     def add_keyframe_to_playlist(
         self, playlist: Playlist, keyframe_name: str, file_path: Optional[str] = None
     ) -> Keyframe:

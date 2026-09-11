@@ -25,6 +25,22 @@ from ..utils.file_utils import verify_file_path
 MAX_PLAYLIST_ITEMS_PER_BATCH = 500
 
 
+class KeyframeCleanupError(RuntimeError):
+    def __init__(
+        self,
+        keyframe_uuid: str,
+        link_error: Exception,
+        cleanup_error: Exception,
+    ) -> None:
+        super().__init__(
+            f"failed to link keyframe {keyframe_uuid} and then failed to "
+            f"delete it: link error={link_error!r}; cleanup error={cleanup_error!r}"
+        )
+        self.keyframe_uuid = keyframe_uuid
+        self.link_error = link_error
+        self.cleanup_error = cleanup_error
+
+
 class PlaylistClient:
     def __init__(self, api_client: ApiClient, file_client: FileClient):
         self.api_client = api_client
@@ -141,10 +157,10 @@ class PlaylistClient:
 
         form_items = []
         for item in items:
-            type = item["type"]
-            if type not in [PlaylistItemType.DREAM, PlaylistItemType.PLAYLIST]:
-                raise Exception(f"Type not allowed, use 'dream' or 'playlist'")
-            form_items.append({"type": type.value, "uuid": item["uuid"]})
+            item_type = item["type"]
+            if item_type not in [PlaylistItemType.DREAM, PlaylistItemType.PLAYLIST]:
+                raise ValueError("Type not allowed, use 'dream' or 'playlist'")
+            form_items.append({"type": item_type.value, "uuid": item["uuid"]})
 
         response = self.api_client.post(
             f"/playlist/{playlist_uuid}/items", {"items": form_items}
@@ -263,14 +279,23 @@ class PlaylistClient:
             new_playlist_keyframe = self._add_keyframe_to_playlist(
                 playlist_uuid=playlist["uuid"], keyframe_uuid=keyframe["uuid"]
             )
-        except Exception:
+        except Exception as link_error:
             # The keyframe exists but is attached to nothing. Leaving it behind
             # accumulates orphans that later runs cannot see or reuse, so drop
             # it before surfacing the failure.
             try:
-                self.delete_keyframe(keyframe["uuid"])
-            except Exception:
-                pass
+                cleanup_succeeded = self.delete_keyframe(keyframe["uuid"])
+                if not cleanup_succeeded:
+                    raise RuntimeError(
+                        "delete_keyframe did not confirm deletion "
+                        f"for {keyframe['uuid']}"
+                    )
+            except Exception as cleanup_error:
+                raise KeyframeCleanupError(
+                    keyframe_uuid=keyframe["uuid"],
+                    link_error=link_error,
+                    cleanup_error=cleanup_error,
+                ) from cleanup_error
             raise
         playlist["playlistKeyframes"].append(new_playlist_keyframe)
         return keyframe

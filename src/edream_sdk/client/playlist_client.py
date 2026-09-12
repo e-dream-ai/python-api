@@ -297,7 +297,9 @@ class PlaylistClient:
                     cleanup_error=cleanup_error,
                 ) from cleanup_error
             raise
-        playlist["playlistKeyframes"].append(new_playlist_keyframe)
+        # create_playlist returns a playlist without this key, so a caller that
+        # passes its result straight in would fail here after the write landed.
+        playlist.setdefault("playlistKeyframes", []).append(new_playlist_keyframe)
         return keyframe
 
     def reorder_playlist(

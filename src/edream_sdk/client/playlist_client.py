@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import List, Optional, Any
 from dataclasses import asdict
 from ..client.api_client import ApiClient
 from ..client.file_client import FileClient
@@ -6,6 +6,7 @@ from ..types.dream_types import Dream
 from ..types.keyframe_types import Keyframe
 from ..types.dream_types import DreamFileType
 from ..types.playlist_types import (
+    AddPlaylistItemInput,
     Playlist,
     PlaylistItem,
     PlaylistItemType,
@@ -19,6 +20,25 @@ from ..types.playlist_types import (
     PlaylistKeyframesResponseWrapper,
 )
 from ..utils.file_utils import verify_file_path
+
+# The backend accepts at most this many items in a single atomic batch.
+MAX_PLAYLIST_ITEMS_PER_BATCH = 500
+
+
+class KeyframeCleanupError(RuntimeError):
+    def __init__(
+        self,
+        keyframe_uuid: str,
+        link_error: Exception,
+        cleanup_error: Exception,
+    ) -> None:
+        super().__init__(
+            f"failed to link keyframe {keyframe_uuid} and then failed to "
+            f"delete it: link error={link_error!r}; cleanup error={cleanup_error!r}"
+        )
+        self.keyframe_uuid = keyframe_uuid
+        self.link_error = link_error
+        self.cleanup_error = cleanup_error
 
 
 class PlaylistClient:
@@ -108,6 +128,45 @@ class PlaylistClient:
         playlistItem = response_data["playlistItem"]
         return playlistItem
 
+    def add_items_to_playlist(
+        self, playlist_uuid: str, items: List[AddPlaylistItemInput]
+    ) -> int:
+        """
+        Adds many items to a playlist in a single atomic request.
+
+        The whole batch is applied in one backend transaction: either every
+        item is added or none is. The backend rejects the batch outright if
+        it contains a duplicate, or if any item is already on the playlist,
+        so filter the list against the playlist's current contents first.
+
+        Args:
+            playlist_uuid (str): playlist uuid
+            items (List[AddPlaylistItemInput]): items to add, each a dict of
+                {"type": PlaylistItemType, "uuid": str}. At most
+                MAX_PLAYLIST_ITEMS_PER_BATCH per call.
+        Returns:
+            int: number of items added
+        """
+        if not items:
+            raise ValueError("items must not be empty")
+        if len(items) > MAX_PLAYLIST_ITEMS_PER_BATCH:
+            raise ValueError(
+                f"cannot add more than {MAX_PLAYLIST_ITEMS_PER_BATCH} items "
+                f"per call, got {len(items)}"
+            )
+
+        form_items = []
+        for item in items:
+            item_type = item["type"]
+            if item_type not in [PlaylistItemType.DREAM, PlaylistItemType.PLAYLIST]:
+                raise ValueError("Type not allowed, use 'dream' or 'playlist'")
+            form_items.append({"type": item_type.value, "uuid": item["uuid"]})
+
+        response = self.api_client.post(
+            f"/playlist/{playlist_uuid}/items", {"items": form_items}
+        )
+        return response["data"]["added"]
+
     def add_file_to_playlist(
         self, 
         uuid: str, 
@@ -180,6 +239,25 @@ class PlaylistClient:
         playlistKeyframe = data["playlistKeyframe"]
         return playlistKeyframe
 
+    def link_keyframe_to_playlist(
+        self, playlist_uuid: str, keyframe_uuid: str
+    ) -> PlaylistKeyframe:
+        """
+        Adds a keyframe that already exists to a playlist.
+
+        Use this to reuse a keyframe by uuid; add_keyframe_to_playlist
+        creates a new one from a name.
+
+        Args:
+            playlist_uuid (str): playlist uuid
+            keyframe_uuid (str): uuid of an existing keyframe
+        Returns:
+            PlaylistKeyframe: the new playlist/keyframe link
+        """
+        return self._add_keyframe_to_playlist(
+            playlist_uuid=playlist_uuid, keyframe_uuid=keyframe_uuid
+        )
+
     def add_keyframe_to_playlist(
         self, playlist: Playlist, keyframe_name: str, file_path: Optional[str] = None
     ) -> Keyframe:
@@ -197,10 +275,31 @@ class PlaylistClient:
         keyframe: Keyframe = self._create_keyframe(
             name=keyframe_name, file_path=file_path
         )
-        new_playlist_keyframe = self._add_keyframe_to_playlist(
-            playlist_uuid=playlist["uuid"], keyframe_uuid=keyframe["uuid"]
-        )
-        playlist["playlistKeyframes"].append(new_playlist_keyframe)
+        try:
+            new_playlist_keyframe = self._add_keyframe_to_playlist(
+                playlist_uuid=playlist["uuid"], keyframe_uuid=keyframe["uuid"]
+            )
+        except Exception as link_error:
+            # The keyframe exists but is attached to nothing. Leaving it behind
+            # accumulates orphans that later runs cannot see or reuse, so drop
+            # it before surfacing the failure.
+            try:
+                cleanup_succeeded = self.delete_keyframe(keyframe["uuid"])
+                if not cleanup_succeeded:
+                    raise RuntimeError(
+                        "delete_keyframe did not confirm deletion "
+                        f"for {keyframe['uuid']}"
+                    )
+            except Exception as cleanup_error:
+                raise KeyframeCleanupError(
+                    keyframe_uuid=keyframe["uuid"],
+                    link_error=link_error,
+                    cleanup_error=cleanup_error,
+                ) from cleanup_error
+            raise
+        # create_playlist returns a playlist without this key, so a caller that
+        # passes its result straight in would fail here after the write landed.
+        playlist.setdefault("playlistKeyframes", []).append(new_playlist_keyframe)
         return keyframe
 
     def reorder_playlist(

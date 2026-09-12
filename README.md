@@ -42,6 +42,37 @@ python tests/run.py
 
 this file has an example of every API call.
 
+### playlists and keyframes
+
+Add many items to a playlist in one atomic request. The whole batch
+succeeds or nothing does, and the backend rejects it outright if any item
+is already on the playlist, so filter first:
+
+```python
+from edream_sdk.types.playlist_types import PlaylistItemType
+
+playlist = edream_client.get_playlist(playlist_uuid)
+already = {i["dreamItem"]["uuid"] for i in playlist["items"] if i.get("dreamItem")}
+
+added = edream_client.add_items_to_playlist(playlist_uuid, [
+    {"type": PlaylistItemType.DREAM, "uuid": uuid}
+    for uuid in dream_uuids if uuid not in already
+])
+```
+
+At most 500 items per call. For a single item `add_item_to_playlist` is
+still the simpler choice.
+
+Keyframes can be looked up by name rather than scanned for:
+
+```python
+keyframe = edream_client.find_keyframe_by_name("00248=22588")
+
+# or page through matches yourself -- search is a substring match
+page = edream_client.get_keyframes(search="00248=", take=100)
+print(page["count"], "matches")
+```
+
 ### AI generation
 
 Use the [Quick Start](https://docs.google.com/document/d/1sXfGgogyrDyaOOxCyG6uvkG1l6uTUE2iNdkqVAa-N0Q).

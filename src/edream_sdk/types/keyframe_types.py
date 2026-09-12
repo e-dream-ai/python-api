@@ -1,4 +1,4 @@
-from typing import Optional, TypedDict
+from typing import List, Optional, TypedDict
 from dataclasses import dataclass
 from .user_types import User
 
@@ -18,6 +18,12 @@ class Keyframe(TypedDict):
 # Keyframe response mapping
 class KeyframeResponseWrapper(TypedDict):
     keyframe: Optional[Keyframe]
+
+
+# Keyframe list response mapping
+class KeyframesResponseWrapper(TypedDict):
+    keyframes: List[Keyframe]
+    count: int
 
 
 # Update keyframe request mapping

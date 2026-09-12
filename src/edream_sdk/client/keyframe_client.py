@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 from ..client.api_client import ApiClient
 from ..client.file_client import FileClient
 from ..types.api_types import ApiResponse
 from ..types.keyframe_types import (
     Keyframe,
     KeyframeResponseWrapper,
+    KeyframesResponseWrapper,
     UpdateKeyframeRequest,
 )
 from ..types.file_upload_types import FileType, UploadFileOptions
@@ -27,6 +28,70 @@ class KeyframeClient:
         data: KeyframeResponseWrapper = response["data"]
         keyframe = data["keyframe"]
         return keyframe
+
+    def get_keyframes(
+        self,
+        search: Optional[str] = None,
+        user_uuid: Optional[str] = None,
+        take: Optional[int] = None,
+        skip: Optional[int] = None,
+    ) -> KeyframesResponseWrapper:
+        """
+        Retrieves a page of keyframes, optionally filtered.
+        Args:
+            search (Optional[str]): case-insensitive substring match on name
+            user_uuid (Optional[str]): restrict to one owner
+            take (Optional[int]): page size (backend caps this at 500)
+            skip (Optional[int]): number of keyframes to skip
+        Returns:
+            KeyframesResponseWrapper: keyframes plus the total match count
+        """
+        params: Dict[str, Any] = {}
+        if search is not None:
+            params["search"] = search
+        if user_uuid is not None:
+            params["userUUID"] = user_uuid
+        if take is not None:
+            params["take"] = take
+        if skip is not None:
+            params["skip"] = skip
+
+        response = self.api_client.get("/keyframe", params=params)
+        data: KeyframesResponseWrapper = response["data"]
+        return data
+
+    def find_keyframe_by_name(
+        self, name: str, user_uuid: Optional[str] = None
+    ) -> Optional[Keyframe]:
+        """
+        Finds a keyframe by its exact name.
+
+        The backend's search is a substring match, so this pages through the
+        matches and returns the first whose name is exactly `name`. Names are
+        not unique; when several match, the most recently updated one wins,
+        which is the order the backend returns.
+
+        Args:
+            name (str): exact keyframe name
+            user_uuid (Optional[str]): restrict to one owner
+        Returns:
+            Optional[Keyframe]: the matching keyframe, or None
+        """
+        take = 100
+        skip = 0
+        while True:
+            page = self.get_keyframes(
+                search=name, user_uuid=user_uuid, take=take, skip=skip
+            )
+            keyframes = page["keyframes"]
+            if not keyframes:
+                return None
+            for keyframe in keyframes:
+                if keyframe.get("name") == name:
+                    return keyframe
+            skip += len(keyframes)
+            if skip >= page.get("count", 0):
+                return None
 
     def _create_keyframe_request(self, name: str) -> Optional[Keyframe]:
         """

@@ -38,4 +38,4 @@ git clone ... && cd python-api && pip install -e .
 ## Key Patterns
 - `create_edream_client(base_url, api_key)` is the main entry point
 - Client provides methods for dream CRUD, playlist management, and status polling
-- Supports all algorithms: qwen-image, wan-t2v, wan-i2v, wan-i2v-lora, deforum, animatediff, uprez
+- Supports all algorithms: qwen-image, wan-t2v, wan-i2v, wan-i2v-lora, deforum, animatediff, enhance

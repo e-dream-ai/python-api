@@ -110,8 +110,8 @@ ALGORITHM_PROMPTS = {
         "output_format": "png",
         "enable_safety_checker": True
     },
-    "uprez": {
-        "infinidream_algorithm": "uprez",
+    "enhance": {
+        "infinidream_algorithm": "enhance",
         "video_uuid": DREAM_UUID,
         "upscale_factor": 2,
         "interpolation_factor": 2,

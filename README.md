@@ -85,7 +85,7 @@ python tests/gen.py --all              # smoke test every endpoint
 python tests/gen.py --all --timeout 7200
 ```
 
-Available algorithms: `animatediff`, `deforum`, `wan-t2v`, `wan-i2v`, `wan-i2v-lora`, `ltx-i2v`, `qwen-image`, `z-image-turbo`, `uprez`, `nvidia-uprez`
+Available algorithms: `animatediff`, `deforum`, `wan-t2v`, `wan-i2v`, `wan-i2v-lora`, `ltx-i2v`, `qwen-image`, `z-image-turbo`, `enhance`, `nvidia-uprez`
 
 For batch/playlist workflows see [engines](https://github.com/e-dream-ai/engines).
 

@@ -18,8 +18,8 @@ prompt keeps the literal -1. A dream rendered with -1 can never be reproduced
 or extended. Drawing the seed here instead puts it in the prompt, the dream
 name, and the description.
 
-Unlike uprez, there is no `seed_playlist` derived-playlist algorithm --
-`uprez_playlist` is the only one the backend knows (backend
+Unlike enhance, there is no `seed_playlist` derived-playlist algorithm --
+`enhance_playlist` is the only one the backend knows (backend
 src/utils/playlist-prompt.util.ts), and its reconciler keys one derived dream
 per source_dream_uuid, so it could not express N variations per source anyway.
 Hand-building the dreams is therefore correct here, not a shortcut around the
@@ -47,7 +47,7 @@ from edream_sdk.types.playlist_types import PlaylistItemType
 
 # Algorithms whose prompt carries no seed. Reseeding these is a no-op, so a
 # source dream using one is skipped unless --force.
-SEEDLESS_ALGORITHMS = {"uprez", "nvidia-uprez", "uprez_playlist"}
+SEEDLESS_ALGORITHMS = {"enhance", "nvidia-uprez", "enhance_playlist"}
 
 MAX_SEED = 2**31 - 1
 

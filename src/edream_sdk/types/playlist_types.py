@@ -57,6 +57,8 @@ class Playlist(TypedDict):
     itemCount: Optional[int] = 0
     featureRank: Optional[int] = 0
     loops: Optional[int] = 0
+    # Crossfade seconds between dreams; 0 = hard cut, None = client default.
+    transitionTime: Optional[float] = None
     nsfw: Optional[bool] = None
     description: Optional[str] = None
     created_at: Optional[str] = None
@@ -81,6 +83,7 @@ class CreatePlaylistRequest(TypedDict):
     description: Optional[str] = None
     nsfw: Optional[bool] = None
     loops: Optional[int] = None
+    transitionTime: Optional[float] = None
 
 
 # Update playlist request mapping
@@ -91,6 +94,7 @@ class UpdatePlaylistRequest(TypedDict):
     nsfw: Optional[bool] = None
     description: Optional[str] = None
     loops: Optional[int] = None
+    transitionTime: Optional[float] = None
 
 
 # Input for adding one item to a playlist (used by the batch endpoint)

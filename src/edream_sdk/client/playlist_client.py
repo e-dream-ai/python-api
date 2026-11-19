@@ -102,7 +102,7 @@ class PlaylistClient:
         Returns:
             Playlist: Found Playlist
         """
-        response = self.api_client.put(f"/playlist/{uuid}", data)
+        response = self.api_client.put(f"/playlist/{uuid}", data, keep_none=True)
         response_data: PlaylistResponseWrapper = response["data"]
         playlist = response_data["playlist"]
         return playlist

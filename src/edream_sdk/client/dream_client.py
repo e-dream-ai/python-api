@@ -34,11 +34,13 @@ class DreamClient:
         Updates a dream by its uuid
         Args:
             uuid (str): dream uuid
-            request_data (UpdateDreamRequest): dream data
+            request_data (UpdateDreamRequest): dream data. Keys set to None are
+                sent as null, which clears the field (e.g. startKeyframe=None);
+                leave a key out to keep its current value.
         Returns:
             Dream: Updated dream
         """
-        response = self.api_client.put(f"/dream/{uuid}", data)
+        response = self.api_client.put(f"/dream/{uuid}", data, keep_none=True)
         data: DreamResponseWrapper = response["data"]
         dream = data["dream"]
         return dream

@@ -136,7 +136,7 @@ class KeyframeClient:
         Returns:
             Keyframe: Found Keyframe
         """
-        response = self.api_client.put(f"/keyframe/{uuid}", data)
+        response = self.api_client.put(f"/keyframe/{uuid}", data, keep_none=True)
         response_data: KeyframeResponseWrapper = response["data"]
         keyframe = response_data["keyframe"]
         return keyframe

@@ -47,10 +47,18 @@ class ApiClient:
         endpoint: str,
         params: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
+        keep_none: bool = False,
     ) -> ApiResponse:
+        """
+        Sends a request. By default, top-level None values in data are dropped
+        so optional fields can be left as None. With keep_none=True they are
+        sent as JSON null, which update endpoints read as "clear this field".
+        """
         try:
             url = f"{self.backend_url}{endpoint}"
-            filtered_data = {k: v for k, v in (data or {}).items() if v is not None}
+            filtered_data = {
+                k: v for k, v in (data or {}).items() if keep_none or v is not None
+            }
             serialized_data = self._serialize_enums(filtered_data)
             response = self.session.request(
                 method, url, params=params, json=serialized_data
@@ -86,8 +94,13 @@ class ApiClient:
     def post(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> ApiResponse:
         return self._request("POST", endpoint, data=data)
 
-    def put(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> ApiResponse:
-        return self._request("PUT", endpoint, data=data)
+    def put(
+        self,
+        endpoint: str,
+        data: Optional[Dict[str, Any]] = None,
+        keep_none: bool = False,
+    ) -> ApiResponse:
+        return self._request("PUT", endpoint, data=data, keep_none=keep_none)
 
     def delete(
         self, endpoint: str, data: Optional[Dict[str, Any]] = None
